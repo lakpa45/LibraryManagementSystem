@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="/output.css" rel="stylesheet">
     <link href="/css/admin_dashboard_shared.css" rel="stylesheet">
+    <link href="/css/dashboard_header.css" rel="stylesheet">
 </head>
 <body>
     <script src="/js/admin_dashboard_guard.js"></script>
@@ -25,9 +26,9 @@
         </aside>
         <button type="button" class="sidebar-overlay" id="sidebarOverlay" aria-label="Close navigation"></button>
         <main class="main-area">
-            <header class="top-header">
+            <header class="top-header dashboard-header">
                 <button type="button" class="mobile-menu" id="mobileMenuBtn" aria-label="Open navigation" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
-                <div class="top-search"><input type="search" placeholder="Search" aria-label="Search dashboard"><button type="button" class="search-btn" aria-label="Search"><i class="fa-solid fa-magnifying-glass"></i></button><div class="profile"><button type="button" class="profile-button" onclick="toggleAdminMenu()"><i class="fa-regular fa-comment-dots"></i><span class="profile-name">Administrator</span><span class="avatar">A</span></button><div id="adminMenu" class="profile-menu hidden"><button type="button" onclick="openPasswordModal()">Change Password</button><button type="button" onclick="logout()">Logout</button></div></div></div>
+                <div class="profile"><button type="button" class="profile-button" onclick="toggleAdminMenu()"><i class="fa-regular fa-comment-dots"></i><span class="profile-name">Administrator</span><span class="avatar">A</span></button><div id="adminMenu" class="profile-menu hidden"><button type="button" onclick="openPasswordModal()">Change Password</button><button type="button" onclick="logout()">Logout</button></div></div>
                 <div class="welcome"><div class="welcome-title"><span class="home-icon"><i class="fa-solid fa-house"></i></span><span>Welcome back, <strong>Administrator</strong></span></div><span id="today-date" class="today"></span></div>
             </header>
             <div class="dashboard-content">

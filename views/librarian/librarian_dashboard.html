@@ -32,9 +32,6 @@
         .main-area { width:100%; min-width:0; min-height:100vh; min-height:100dvh; overflow-x:hidden; }
         .top-header { height:92px; padding:14px 20px; background:#fff; border-bottom:1px solid var(--line); display:grid; grid-template-columns:1fr auto; grid-template-rows:38px 32px; align-items:center; }
         .mobile-menu { display:none; width:38px; height:38px; border:1px solid var(--line); border-radius:8px; background:#fff; color:var(--red); cursor:pointer; }
-        .top-search { grid-column:2; display:flex; align-items:center; }
-        .top-search input { width:220px; height:34px; padding:0 14px; border:1px solid #d6d7da; border-radius:18px 0 0 18px; outline:none; }
-        .search-btn { width:38px; height:34px; margin-left:-1px; border:1px solid #d6d7da; border-radius:0 6px 6px 0; background:#fff; color:#8d9298; cursor:pointer; }
         .profile { display:flex; align-items:center; gap:10px; margin-left:18px; position:relative; }
         .profile-button { border:0; background:transparent; display:flex; align-items:center; gap:9px; cursor:pointer; }
         .avatar { width:38px; height:38px; display:grid; place-items:center; border-radius:50%; background:#242424; color:#fff; font-weight:700; position:relative; }
@@ -93,12 +90,10 @@
             .sidebar-overlay.open { opacity:1; visibility:visible; }
             .mobile-menu { display:grid; place-items:center; grid-row:1; grid-column:1; }
             .top-header { grid-template-columns:auto 1fr; }
-            .top-search { grid-column:2; }
             .report-grid { grid-template-columns:1fr; }
         }
         @media (max-width:640px) {
             .top-header { height:auto; grid-template-rows:auto auto; gap:12px; }
-            .top-search input { width:min(42vw,180px); }
             .profile-name { display:none; }
             .welcome { padding-top:6px; }
             .today { display:none; }
@@ -107,6 +102,7 @@
             .report-card { padding:11px; }
         }
     </style>
+    <link href="/css/dashboard_header.css" rel="stylesheet">
 </head>
 <body>
     <script src="/js/admin_dashboard_guard.js"></script>
@@ -139,21 +135,17 @@
         <button type="button" class="sidebar-overlay" id="sidebarOverlay" aria-label="Close navigation"></button>
 
         <main class="main-area">
-            <header class="top-header">
+            <header class="top-header dashboard-header">
                 <button type="button" class="mobile-menu" id="mobileMenuBtn" aria-label="Open navigation" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
-                <div class="top-search">
-                    <input type="search" placeholder="Search" aria-label="Search dashboard">
-                    <button type="button" class="search-btn" aria-label="Search"><i class="fa-solid fa-magnifying-glass"></i></button>
-                    <div class="profile">
-                        <button type="button" class="profile-button" onclick="toggleAdminMenu()">
-                            <i class="fa-regular fa-comment-dots"></i>
-                            <span class="profile-name" id="librarianName">Librarian</span>
-                            <span class="avatar">L</span>
-                        </button>
-                        <div id="adminMenu" class="profile-menu hidden">
-                            <button type="button" onclick="openPasswordModal()">Change Password</button>
-                            <button type="button" onclick="logout()">Logout</button>
-                        </div>
+                <div class="profile">
+                    <button type="button" class="profile-button" onclick="toggleAdminMenu()">
+                        <i class="fa-regular fa-comment-dots"></i>
+                        <span class="profile-name" id="librarianName">Librarian</span>
+                        <span class="avatar">L</span>
+                    </button>
+                    <div id="adminMenu" class="profile-menu hidden">
+                        <button type="button" onclick="openPasswordModal()">Change Password</button>
+                        <button type="button" onclick="logout()">Logout</button>
                     </div>
                 </div>
                 <div class="welcome">

@@ -1,0 +1,42 @@
+.top-header.dashboard-header {
+    height: auto;
+    min-height: 76px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto;
+    gap: 12px;
+}
+
+.dashboard-header > .profile {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    margin-left: 0;
+}
+
+.dashboard-header > .welcome {
+    grid-column: 1;
+    grid-row: 1;
+    min-width: 0;
+    flex-wrap: wrap;
+    padding-top: 0;
+}
+
+.dashboard-header .welcome-title {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.dashboard-header .home-icon {
+    flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+    .top-header.dashboard-header {
+        grid-template-rows: auto auto;
+    }
+
+    .dashboard-header > .welcome {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+}
