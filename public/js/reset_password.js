@@ -7,11 +7,16 @@ const alertBox = document.getElementById('alertBox');
 
 const queryParameters = new URLSearchParams(window.location.search);
 const token = queryParameters.get('token');
+const resendLink = document.getElementById('resendLink');
+let busy = false;
+// Keep the token in memory, not browser history or referrer URLs.
+window.history.replaceState(null, '', window.location.pathname);
 
 // Prevent the form from being used without a reset token.
-if (!token) {
+if (!token || !/^[a-f0-9]{64}$/.test(token)) {
+    resendLink.classList.remove('hidden');
     showMessage(
-        'This reset link is invalid. Please request a new link.',
+        token ? 'This reset link is invalid. Please request a new link.' : 'The reset token is missing. Please request a new link.',
         'error'
     );
 
@@ -20,6 +25,7 @@ if (!token) {
 
 form.addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (busy || submitBtn.disabled) return;
 
     const newPassword = newPasswordInput.value;
     const confirmPassword = confirmPasswordInput.value;
@@ -29,9 +35,9 @@ form.addEventListener('submit', async (event) => {
         return;
     }
 
-    if (newPassword.length < 8 || newPassword.length > 72) {
+    if (newPassword.length < 8 || new TextEncoder().encode(newPassword).length > 72) {
         showMessage(
-            'Your password must contain between 8 and 72 characters.',
+            'Use at least 8 characters (maximum 72 UTF-8 bytes).',
             'error'
         );
         return;
@@ -61,23 +67,29 @@ form.addEventListener('submit', async (event) => {
             ? await response.json()
             : {};
 
+        if (data.code === 'INVALID_RESET_LINK') {
+            showMessage(data.message, 'error');
+            resendLink.classList.remove('hidden');
+            disableForm();
+            buttonText.textContent = 'Reset Password';
+            return;
+        }
         if (!response.ok) {
             throw new Error(
-                data.message || 'Unable to reset your password.'
+                response.status >= 500 ? 'Unable to reset your password right now. Please try again later.' : data.message || 'Unable to reset your password.'
             );
         }
 
         showMessage(
-            'Password reset successfully. Redirecting to login...',
+            'Your password has been reset successfully. You can now log in.',
             'success'
         );
 
         form.reset();
         disableForm();
+        buttonText.textContent = 'Password reset';
 
-        setTimeout(() => {
-            window.location.href = '/';
-        }, 2000);
+        document.getElementById('loginLink').focus();
     } catch (error) {
         showMessage(
             error.message || 'Something went wrong. Please try again.',
@@ -117,6 +129,7 @@ function showMessage(message, type) {
 }
 
 function setLoading(isLoading) {
+    busy = isLoading;
     submitBtn.disabled = isLoading;
     buttonText.textContent = isLoading
         ? 'Resetting...'

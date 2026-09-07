@@ -21,6 +21,11 @@ const __dirname = path.dirname(__filename);
 const PORT = process.env.PORT || 3000;
 
 const app = express();
+if (process.env.NODE_ENV?.trim() === 'production' || process.env.RAILWAY_ENVIRONMENT_ID) app.set('trust proxy', 1);
+app.use(['/forgot-password', '/forgot_password.html', '/forget_password.html', '/reset-password', '/reset_password.html', '/api/auth/forgot-password', '/api/auth/reset-password'], (req, res, next) => {
+    res.set({ 'Cache-Control': 'no-store', 'Referrer-Policy': 'no-referrer' });
+    next();
+});
 
 app.use(express.json());
 app.use(cookieParser());
@@ -65,7 +70,7 @@ app.get('/my-books', (req, res) => {
 });
 
 app.get('/register', (req, res) => res.sendFile(path.join(__dirname, 'views', 'register.html')));
-app.get('/forgot-password', (req, res) => res.sendFile(path.join(__dirname, 'views', 'forget_password.html')));
+app.get(['/forgot-password', '/forgot_password.html'], (req, res) => res.sendFile(path.join(__dirname, 'views', 'forget_password.html')));
 app.get('/reset-password', (req, res) => res.sendFile(path.join(__dirname, 'views', 'reset_password.html')));
 
 // Map of clean admin pages

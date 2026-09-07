@@ -305,6 +305,9 @@ function initAuth() {
         clearErrors();
     };
 
+    // Password-reset completion links directly to the existing login modal.
+    if (new URLSearchParams(window.location.search).get('login') === '1') openModal();
+
     // Modal Event Listeners
     loginButtons.forEach((button) => {
         button.addEventListener('click', (e) => { e.preventDefault(); openModal(); });
