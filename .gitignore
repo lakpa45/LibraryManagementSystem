@@ -148,3 +148,9 @@ node_modules/
 dist/
 .DS_Store
 /src/generated/prisma
+
+# Private Railway access keys and database backups
+/railway connect
+/railway connect.pub
+*.dump
+*.dump~

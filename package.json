@@ -7,7 +7,11 @@
     "dev": "nodemon server.js",
     "css": "tailwindcss -i ./src/input.css -o ./public/output.css --watch",
     "test:password-reset": "node --test tests/password_reset.test.js",
-    "migrate:password-reset": "node scripts/migrate-password-reset.js"
+    "migrate:password-reset": "node scripts/migrate-password-reset.js",
+    "test:password-reset:browser": "node tests/password_reset_browser.mjs",
+    "start": "node server.js",
+    "build": "tailwindcss -i ./src/input.css -o ./public/output.css --minify",
+    "test:audit": "node --test tests/system_audit.test.js"
   },
   "repository": {
     "type": "git",

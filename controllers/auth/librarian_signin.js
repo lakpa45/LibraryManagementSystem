@@ -4,6 +4,9 @@ import pool from '../../db/connection.js';
 
 export const librarianSignin = async (req, res) => {
     try {
+        if (typeof req.body?.email !== 'string' || typeof req.body?.password !== 'string' || !req.body.password || Buffer.byteLength(req.body.password, 'utf8') > 72) {
+            return res.status(400).json({ message: 'A valid email and password are required.' });
+        }
         const email = String(req.body.email || '').trim().toLowerCase();
         const { password, role = 'admin' } = req.body;
 

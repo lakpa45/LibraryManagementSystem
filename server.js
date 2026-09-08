@@ -18,6 +18,8 @@ import { requireAdminPage } from './middleware/admin_page_guard.js';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+if (!process.env.JWT_SECRET?.trim()) throw new Error('JWT_SECRET is required');
+
 const PORT = process.env.PORT || 3000;
 
 const app = express();
@@ -29,6 +31,9 @@ app.use(['/forgot-password', '/forgot_password.html', '/forget_password.html', '
 
 app.use(express.json());
 app.use(cookieParser());
+// Keep legacy stylesheet URLs on the same generated Tailwind build.
+app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'public', 'images', 'placeholder-book.svg')));
+app.get('/css/output.css', (req, res) => res.sendFile(path.join(__dirname, 'public', 'output.css')));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use((req, res, next) => {
     const directProtectedView = /^\/(?:admin|librarian)\/.*\.html$/i.test(req.path);

@@ -1,7 +1,7 @@
 function createProductCard(book) {
   const article = document.createElement('article'); article.className = 'product'; article.dataset.bookId = book.book_id;
   const media = document.createElement('div'); media.className = 'product__media';
-  const image = document.createElement('img'); image.src = book.cover_image || '/images/placeholder-book.jpg'; image.alt = `Cover of ${book.title}`; image.loading = 'lazy';
+  const image = document.createElement('img'); image.src = book.cover_image || '/images/placeholder-book.svg'; image.alt = `Cover of ${book.title}`; image.loading = 'lazy';
   const wishlist = document.createElement('button'); wishlist.className = 'product__add wishlist-toggle'; wishlist.dataset.id = book.book_id;
   wishlist.setAttribute('aria-pressed', String(Boolean(book.wishlisted))); wishlist.setAttribute('aria-label', `${book.wishlisted ? 'Remove' : 'Add'} ${book.title} ${book.wishlisted ? 'from' : 'to'} wishlist`); wishlist.textContent = book.wishlisted ? '♥ In Wishlist' : '♡ Add to Wishlist';
   media.append(image, wishlist);

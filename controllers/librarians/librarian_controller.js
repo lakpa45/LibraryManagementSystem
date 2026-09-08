@@ -17,10 +17,10 @@ export const getLibrarians = async (req, res) => {
 
 export const createLibrarian = async (req, res) => {
     try {
-        const name = typeof req.body.name === 'string' ? req.body.name.trim() : '';
-        const email = typeof req.body.email === 'string' ? req.body.email.trim().toLowerCase() : '';
-        const password = typeof req.body.password === 'string' ? req.body.password : '';
-        const phone = typeof req.body.phone === 'string' ? req.body.phone.trim() : '';
+        const name = typeof req.body?.name === 'string' ? req.body?.name.trim() : '';
+        const email = typeof req.body?.email === 'string' ? req.body?.email.trim().toLowerCase() : '';
+        const password = typeof req.body?.password === 'string' ? req.body?.password : '';
+        const phone = typeof req.body?.phone === 'string' ? req.body?.phone.trim() : '';
 
         if (!name || !email || !password) {
             return res.status(400).json({ message: 'Name, email, and password are required.' });
@@ -28,8 +28,9 @@ export const createLibrarian = async (req, res) => {
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             return res.status(400).json({ message: 'Enter a valid email address.' });
         }
-        if (password.length < 6) {
-            return res.status(400).json({ message: 'Password must contain at least 6 characters.' });
+        if (name.length > 100 || email.length > 100 || phone.length > 20) return res.status(400).json({message:'Please shorten the librarian details.'});
+        if (password.length < 6 || Buffer.byteLength(password, 'utf8') > 72) {
+            return res.status(400).json({ message: 'Password must contain at least 6 characters and at most 72 bytes.' });
         }
 
         const existing = await pool.query(
@@ -53,7 +54,7 @@ export const createLibrarian = async (req, res) => {
         if (error.code === '23505') {
             return res.status(409).json({ message: 'A librarian with this email already exists.' });
         }
-        console.error('Failed to create librarian:', error);
+        console.error('Failed to create librarian');
         res.status(500).json({ message: 'Unable to add the librarian.' });
     }
 };

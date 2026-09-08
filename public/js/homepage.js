@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadFeaturedBooks();
 
     /* ---- book of the month + new arrivals (cart-driven, from homepage_cart.js) ---- */
-    loadHomepageProducts().then(() => {
+    if (typeof loadHomepageProducts === 'function') loadHomepageProducts().then(() => {
         buildSlider('picks', {
             minSlides: 8,
             slidesPerView: 1,

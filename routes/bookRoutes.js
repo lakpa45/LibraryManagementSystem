@@ -1,3 +1,4 @@
+import { validateId } from '../middleware/validate_id.js';
 import express from 'express';
 import upload, { validateUploadedSignatures, validateUploadedSizes } from '../middleware/upload.js';
 import { getBooks, createBook, updateBook, deleteBook, searchBooks, getBookById, getAvailableBooks } from '../controllers/books/book_controller.js';
@@ -5,6 +6,7 @@ import { getFreeBooks } from '../controllers/books/free_books_controller.js';
 import { optionalMemberAuth, verifyToken, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
+router.param('id', validateId);
 
 router.get('/available', getAvailableBooks);
 router.get('/search', searchBooks);

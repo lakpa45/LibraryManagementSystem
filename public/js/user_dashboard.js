@@ -69,10 +69,6 @@
   /* account settings form */
   const accountForm = document.querySelector(".account__fields");
   if (accountForm) {
-    accountForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      toast("Account details saved");
-    });
     const changePwBtn = accountForm.querySelector(".btn--ghost");
     changePwBtn?.addEventListener("click", () => {
       window.location.href = "/forget_password.html";

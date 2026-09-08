@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -18,7 +19,7 @@ const storage = multer.diskStorage({
     },
     filename: (req, file, cb) => {
         const safeName = path.basename(file.originalname).replace(/[^a-zA-Z0-9._-]/g, '-');
-        const uniqueName = Date.now() + '-' + safeName;
+        const uniqueName = randomUUID() + '-' + safeName;
         cb(null, uniqueName);
     }
 });

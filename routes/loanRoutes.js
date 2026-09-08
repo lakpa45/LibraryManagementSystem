@@ -1,3 +1,4 @@
+import { validateId } from '../middleware/validate_id.js';
 import express from 'express';
 import {
     getActiveLoans,
@@ -14,6 +15,8 @@ import {
 import { verifyToken, requireAdmin, requireMember } from '../middleware/auth.js';
 
 const router = express.Router();
+router.param('id', validateId);
+router.param('memberId', validateId);
 
 router.get('/active', verifyToken, requireAdmin, getActiveLoans);
 router.get('/members/search', verifyToken, requireAdmin, searchMembers);

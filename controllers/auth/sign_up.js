@@ -1,11 +1,9 @@
+import { randomBytes } from 'node:crypto';
+import { validDate } from '../../utils/date_validation.js';
 import bcrypt from 'bcrypt';
 import pool from '../../db/connection.js';
 
-function generateTempPassword(first_name, dob) {
-    const namePart = (first_name || 'User').slice(0, 4);
-    const birthYear = dob ? new Date(dob).getFullYear() : new Date().getFullYear();
-    return `${namePart}${birthYear}`;
-}
+function generateTempPassword() { return randomBytes(18).toString('base64url'); }
 
 async function generateCardNo(client, memberType) {
     const prefixMap = { Student: 'STU', Faculty: 'FAC', Staff: 'STF' };
@@ -34,7 +32,7 @@ export const signup = async (req, res) => {
         let {
             first_name, last_name, email, phone, password,
             member_type, department, roll_id, dob, address, valid_till
-        } = req.body;
+        } = req.body || {};
 
         first_name = typeof first_name === 'string' ? first_name.trim() : '';
         last_name = typeof last_name === 'string' ? last_name.trim() : '';
@@ -43,10 +41,10 @@ export const signup = async (req, res) => {
         department = typeof department === 'string' ? department.trim() : '';
         member_type = member_type || 'Student';
 
-        if (first_name.length < 1 || last_name.length < 1) {
+        if (first_name.length < 1 || last_name.length < 1 || first_name.length > 100 || last_name.length > 100) {
             return res.status(400).json({ message: 'First and last name are required.' });
         }
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        if (email.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             return res.status(400).json({ message: 'A valid email address is required.' });
         }
         if (!/^\d{10}$/.test(phone)) {
@@ -55,8 +53,12 @@ export const signup = async (req, res) => {
         if (!['Student', 'Faculty', 'Staff'].includes(member_type)) {
             return res.status(400).json({ message: 'Please select a valid member role.' });
         }
-        if (password && (typeof password !== 'string' || password.length < 8 || password.length > 72)) {
-            return res.status(400).json({ message: 'Password must be between 8 and 72 characters.' });
+        if (password && (typeof password !== 'string' || password.length < 8 || Buffer.byteLength(password, 'utf8') > 72)) {
+            return res.status(400).json({ message: 'Password must be at least 8 characters and at most 72 bytes.' });
+        }
+
+        if ((dob && !validDate(dob)) || (valid_till && !validDate(valid_till)) || department.length > 100 || (roll_id && (typeof roll_id !== 'string' || roll_id.length > 50)) || (address && typeof address !== 'string')) {
+            return res.status(400).json({ message: 'Please check the dates and member details.' });
         }
 
         client = await pool.connect();
@@ -96,7 +98,7 @@ export const signup = async (req, res) => {
         if (err.code === '23505' && (err.constraint === 'member_email_key' || err.constraint === 'member_email_lower_unique')) {
             return res.status(409).json({ message: 'Email already registered' });
         }
-        console.error(err);
+        console.error('Member registration failed');
         res.status(500).json({ message: 'Server error' });
     } finally {
         client?.release();

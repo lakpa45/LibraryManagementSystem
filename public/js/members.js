@@ -1,3 +1,4 @@
+function escapeMemberHtml(value) { return String(value ?? '').replace(/[&<>\"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[c])); }
 let members = [];
 let state = { search:'', type:'all', sort:'recent' };
 
@@ -56,26 +57,26 @@ function render() {
         body.innerHTML = list.map(m => {
             const expired = isExpired(m.valid_till);
             return `
-            <tr class="fade-row hover:bg-paper/60 transition cursor-pointer" data-id="${m.member_id}">
+            <tr class="fade-row hover:bg-paper/60 transition cursor-pointer" data-id="${escapeMemberHtml(m.member_id)}">
                 <td class="px-5 py-3">
                     <div class="flex items-center gap-3">
-                        <div class="w-8 h-8 rounded-full bg-forest/10 text-forest flex items-center justify-center font-display text-xs shrink-0">${initials(m.first_name, m.last_name)}</div>
-                        <span class="font-medium">${m.first_name} ${m.last_name}</span>
+                        <div class="w-8 h-8 rounded-full bg-forest/10 text-forest flex items-center justify-center font-display text-xs shrink-0">${escapeMemberHtml(initials(m.first_name, m.last_name))}</div>
+                        <span class="font-medium">${escapeMemberHtml(m.first_name)} ${escapeMemberHtml(m.last_name)}</span>
                     </div>
                 </td>
-                <td class="px-5 py-3 font-mono text-xs text-ink-light">${m.card_no || '—'}</td>
+                <td class="px-5 py-3 font-mono text-xs text-ink-light">${escapeMemberHtml(m.card_no || '—')}</td>
                 <td class="px-5 py-3">
-                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold stamp bg-forest/10 text-forest">${m.member_type || '—'}</span>
+                    <span class="inline-block px-2.5 py-1 rounded-full text-[11px] font-semibold stamp bg-forest/10 text-forest">${escapeMemberHtml(m.member_type || '—')}</span>
                 </td>
-                <td class="px-5 py-3 text-ink-light">${m.department || '—'}</td>
+                <td class="px-5 py-3 text-ink-light">${escapeMemberHtml(m.department || '—')}</td>
                 <td class="px-5 py-3 text-ink-light text-xs">
-                    <p>${m.phone || '—'}</p>
+                    <p>${escapeMemberHtml(m.phone || '—')}</p>
                 </td>
                 <td class="px-5 py-3">
                     <span class="text-xs font-medium ${expired ? 'text-clay' : 'text-ink-light'}">${fmtDate(m.valid_till)}${expired ? ' · Expired' : ''}</span>
                 </td>
                 <td class="px-5 py-3 text-right">
-                    <button class="text-xs font-medium text-brass-dark hover:text-brass" data-view="${m.member_id}">View</button>
+                    <button class="text-xs font-medium text-brass-dark hover:text-brass" data-view="${escapeMemberHtml(m.member_id)}">View</button>
                 </td>
             </tr>`;
         }).join('');

@@ -1,3 +1,4 @@
+function categoryEscape(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 async function loadCategoryBooks(categoryId) {
    const grid = document.querySelector('.books-grid');
    if (!grid) return;
@@ -17,14 +18,14 @@ async function loadCategoryBooks(categoryId) {
            <article class="book-card">
                <div class="book-cover">
                    ${book.cover_image
-                       ? `<img src="${book.cover_image}" alt="${book.title}" style="width:100%;height:100%;object-fit:cover;">`
+                       ? `<img src="${categoryEscape(book.cover_image)}" alt="${categoryEscape(book.title)}" style="width:100%;height:100%;object-fit:cover;">`
                        : `<i class="fa-solid fa-book"></i>`
                    }
                </div>
                <div class="book-info">
-                   <h3>${book.title}</h3>
-                   <p>${book.description || 'No description available.'}</p>
-                   <button type="button" class="book-btn" data-book-id="${book.book_id}">
+                   <h3>${categoryEscape(book.title)}</h3>
+                   <p>${categoryEscape(book.description || 'No description available.')}</p>
+                   <button type="button" class="book-btn" data-book-id="${categoryEscape(book.book_id)}">
                        Borrow Book
                        <i class="fa-solid fa-arrow-right"></i>
                    </button>
@@ -46,13 +47,7 @@ function wireCategoryCartButtons(grid, books) {
            const book = booksById.get(button.dataset.bookId);
            if (!book) return;
 
-           // Use the same shared localStorage cart and addToCart() logic as the homepage.
-           addToCart({
-               ...book,
-               book_id: Number(book.book_id),
-               category_name: book.category_name || '',
-           });
-           window.location.href = '/add_to_cart.html';
+           window.location.href = `/book.html?id=${encodeURIComponent(book.book_id)}`;
        });
    });
 }

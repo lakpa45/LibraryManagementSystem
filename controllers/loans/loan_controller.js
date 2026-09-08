@@ -1,3 +1,4 @@
+import { validDate } from '../../utils/date_validation.js';
 import pool from '../../db/connection.js';
 
 const FINE_PER_DAY = 5;
@@ -115,15 +116,16 @@ export const getMemberActiveLoans = async (req, res) => {
 
 // ISSUE a book (admin-initiated)
 export const issueBook = async (req, res) => {
-    const client = await pool.connect();
+    let client;
     try {
+        client = await pool.connect();
         const memberId = Number(req.body.member_id);
         const bookId = Number(req.body.book_id);
         const issueDate = String(req.body.issue_date || '').trim();
         const dueDate = String(req.body.due_date || '').trim();
 
         if (!Number.isInteger(memberId) || memberId < 1 || !Number.isInteger(bookId) || bookId < 1 ||
-            !/^\d{4}-\d{2}-\d{2}$/.test(issueDate) || !/^\d{4}-\d{2}-\d{2}$/.test(dueDate) || dueDate < issueDate) {
+            !validDate(issueDate) || !validDate(dueDate) || dueDate < issueDate) {
             return res.status(400).json({ message: 'Valid member, book, issue date, and due date are required.' });
         }
 
@@ -198,26 +200,27 @@ export const issueBook = async (req, res) => {
         );
 
         await client.query('COMMIT');
-        res.status(201).json({
+        res.status(201).json(req.selfServiceBorrow ? issueResult.rows[0] : {
             message: 'Book borrowed successfully.',
             borrowing: issueResult.rows[0]
         });
     } catch (err) {
-        await client.query('ROLLBACK');
-        console.error(err);
+        if (client) await client.query('ROLLBACK').catch(() => {});
+        console.error('Loan operation failed');
         res.status(500).json({ message: 'Server error' });
     } finally {
-        client.release();
+        client?.release();
     }
 };
 
 // RETURN a book
 export const returnBook = async (req, res) => {
-    const client = await pool.connect();
+    let client;
     try {
+        client = await pool.connect();
         const id = Number(req.params.id);
         const requestedReturnDate = req.body.return_date ? String(req.body.return_date).trim() : '';
-        if (!Number.isInteger(id) || id < 1 || (requestedReturnDate && !/^\d{4}-\d{2}-\d{2}$/.test(requestedReturnDate))) {
+        if (!Number.isInteger(id) || id < 1 || (requestedReturnDate && !validDate(requestedReturnDate))) {
             return res.status(400).json({ message: 'A valid borrowing ID and return date are required.' });
         }
 
@@ -261,11 +264,11 @@ export const returnBook = async (req, res) => {
         await client.query('COMMIT');
         res.status(200).json({ message: 'Book returned', fine });
     } catch (err) {
-        await client.query('ROLLBACK');
-        console.error(err);
+        if (client) await client.query('ROLLBACK').catch(() => {});
+        console.error('Loan operation failed');
         res.status(500).json({ message: 'Server error' });
     } finally {
-        client.release();
+        client?.release();
     }
 };
 
@@ -336,19 +339,12 @@ export const renewMyLoan = async (req, res) => {
 
         const { id } = req.params;
 
-        const issueResult = await pool.query(
-            `SELECT * FROM issue WHERE issue_id = $1 AND member_id = $2 AND return_date IS NULL`,
+        const result = await pool.query(
+            `UPDATE issue SET due_date = due_date + INTERVAL '14 days'
+             WHERE issue_id = $1 AND member_id = $2 AND return_date IS NULL RETURNING due_date`,
             [id, memberId]
         );
-
-        if (issueResult.rows.length === 0) {
-            return res.status(404).json({ message: 'Active loan not found' });
-        }
-
-        const result = await pool.query(
-            `UPDATE issue SET due_date = due_date + INTERVAL '14 days' WHERE issue_id = $1 RETURNING due_date`,
-            [id]
-        );
+        if (!result.rowCount) return res.status(404).json({ message: 'Active loan not found' });
 
         res.status(200).json({ message: 'Loan renewed', due_date: result.rows[0].due_date });
     } catch (err) {
@@ -359,58 +355,19 @@ export const renewMyLoan = async (req, res) => {
 
 // BORROW a book (self-service — the logged-in member borrows for themselves)
 export const borrowBook = async (req, res) => {
-    const client = await pool.connect();
     try {
         const memberId = await resolveMemberId(req.user);
-        if (!memberId) {
-            return res.status(404).json({ message: 'Member not found' });
-        }
-
-        const { book_id } = req.body;
-        if (!book_id) {
-            return res.status(400).json({ message: 'book_id is required' });
-        }
-
-        const issueDate = new Date();
-        const dueDate = new Date();
-        dueDate.setDate(dueDate.getDate() + 14);
-
-        await client.query('BEGIN');
-
-        const copyResult = await client.query(
-            `SELECT copy_id FROM book_copy
-             WHERE book_id = $1 AND status = 'Available'
-             LIMIT 1 FOR UPDATE`,
-            [book_id]
-        );
-
-        if (copyResult.rows.length === 0) {
-            await client.query('ROLLBACK');
-            return res.status(400).json({ message: 'No available copies for this book' });
-        }
-
-        const copyId = copyResult.rows[0].copy_id;
-
-        await client.query(
-            `UPDATE book_copy SET status = 'Issued' WHERE copy_id = $1`,
-            [copyId]
-        );
-
-        const issueResult = await client.query(
-            `INSERT INTO issue (issue_date, due_date, member_id, copy_id)
-             VALUES ($1, $2, $3, $4)
-             RETURNING *`,
-            [issueDate.toISOString().slice(0, 10), dueDate.toISOString().slice(0, 10), memberId, copyId]
-        );
-
-        await client.query('COMMIT');
-        res.status(201).json(issueResult.rows[0]);
-    } catch (err) {
-        await client.query('ROLLBACK');
-        console.error(err);
-        res.status(500).json({ message: 'Server error' });
-    } finally {
-        client.release();
+        if (!memberId) return res.status(404).json({ message: 'Member not found' });
+        const today = new Date();
+        const due = new Date(today);
+        due.setUTCDate(due.getUTCDate() + 14);
+        // Reuse the same approved-member, physical-book and concurrency checks as staff issuance.
+        return await issueBook({ ...req, selfServiceBorrow: true, body: {
+            member_id: memberId, book_id: req.body?.book_id,
+            issue_date: today.toISOString().slice(0, 10), due_date: due.toISOString().slice(0, 10)
+        } }, res);
+    } catch {
+        res.status(500).json({ message: 'Unable to borrow this book right now.' });
     }
 };
 

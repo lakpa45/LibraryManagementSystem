@@ -88,13 +88,14 @@ export const getBooks = async (req, res) => {
 
 // CREATE a book (with copies)
 export const createBook = async (req, res) => {
-    const client = await pool.connect();
+    let client;
     try {
+        client = await pool.connect();
         const title = String(req.body.title || '').trim();
         const description = String(req.body.description || '').trim();
         const isbn = String(req.body.isbn || '').trim() || null;
-        const categoryId = Number.parseInt(req.body.category_id, 10);
-        const numCopies = Number.parseInt(req.body.copies, 10);
+        const categoryId = Number(req.body.category_id);
+        const numCopies = Number(req.body.copies);
         const bookType = String(req.body.book_type || 'physical').trim().toLowerCase();
 
         if (!title) {
@@ -151,7 +152,7 @@ export const createBook = async (req, res) => {
         await client.query('COMMIT');
         res.status(201).json(book);
     } catch (err) {
-        await client.query('ROLLBACK');
+        if (client) await client.query('ROLLBACK').catch(() => {});
         await removeUploadedFiles(req);
         if (err.code === '23505' && err.constraint === 'book_isbn_key') {
             return res.status(409).json({ message: 'A book with this ISBN already exists' });
@@ -159,7 +160,7 @@ export const createBook = async (req, res) => {
         console.error(err);
         res.status(500).json({ message: 'Server error' });
     } finally {
-        client.release();
+        client?.release();
     }
 };
 
@@ -170,7 +171,7 @@ export const updateBook = async (req, res) => {
         const title = String(req.body.title || '').trim();
         const description = String(req.body.description || '').trim();
         const isbn = String(req.body.isbn || '').trim() || null;
-        const categoryId = Number.parseInt(req.body.category_id, 10);
+        const categoryId = Number(req.body.category_id);
         const bookType = String(req.body.book_type || 'physical').trim().toLowerCase();
 
         if (!title) {
@@ -232,9 +233,10 @@ export const updateBook = async (req, res) => {
 
 // DELETE a book
 export const deleteBook = async (req, res) => {
-    const client = await pool.connect();
+    let client;
 
     try {
+        client = await pool.connect();
         const { id } = req.params;
 
         await client.query('BEGIN');
@@ -275,26 +277,19 @@ export const deleteBook = async (req, res) => {
         await client.query('COMMIT');
         res.status(200).json({ message: 'Book deleted' });
     } catch (err) {
-        await removeUploadedFiles(req);
-        if (err.code === '23505' && err.constraint === 'book_isbn_key') {
-            return res.status(409).json({ message: 'A book with this ISBN already exists' });
-        }
-        await client.query('ROLLBACK');
-        await removeUploadedFiles(req);
-        if (err.code === '23505' && err.constraint === 'book_isbn_key') {
-            return res.status(409).json({ message: 'A book with this ISBN already exists' });
-        }
-        console.error(err);
+        if (client) await client.query('ROLLBACK').catch(() => {});
+        if (err.code === '23503') return res.status(409).json({ message: 'This book has related records and cannot be removed.' });
+        console.error('Book deletion failed');
         res.status(500).json({ message: 'Server error' });
     } finally {
-        client.release();
+        client?.release();
     }
 };
 
 // SEARCH books by title or category name
 export const searchBooks = async (req, res) => {
     try {
-        const q = (req.query.q || '').trim();
+        const q = typeof req.query.q === 'string' ? req.query.q.trim() : '';
         if (!q) {
             return res.status(200).json([]);
         }

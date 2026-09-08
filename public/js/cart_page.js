@@ -15,7 +15,7 @@ function renderCartPage() {
 
   container.innerHTML = cart.map(item => `
     <div class="cart-item" data-id="${item.book_id}">
-      <img src="${item.cover_image || '/images/placeholder-book.jpg'}" alt="${item.title}">
+      <img src="${item.cover_image || '/images/placeholder-book.svg'}" alt="${item.title}">
       <div class="cart-item-details">
         <h4>${item.title}</h4>
         <p>${item.category_name}</p>
