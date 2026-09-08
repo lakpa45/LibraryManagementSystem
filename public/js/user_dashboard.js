@@ -70,9 +70,8 @@
   const accountForm = document.querySelector(".account__fields");
   if (accountForm) {
     const changePwBtn = accountForm.querySelector(".btn--ghost");
-    changePwBtn?.addEventListener("click", () => {
-      window.location.href = "/forget_password.html";
-    });
+    // This button uses email reset, which is temporarily unavailable.
+    if (changePwBtn) changePwBtn.hidden = true;
   }
 
   /* nav scrollspy */

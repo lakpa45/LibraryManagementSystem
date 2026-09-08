@@ -4,12 +4,12 @@ import { signin } from '../controllers/auth/sign_in.js';
 import { librarianSignin } from '../controllers/auth/librarian_signin.js';
 import { librarianStaffSignin } from '../controllers/auth/librarian_staff_signin.js';
 
-import { forgotPassword, resetPassword } from '../controllers/auth/password_reset_controller.js';
+// Temporarily disabled: import { forgotPassword, resetPassword } from '../controllers/auth/password_reset_controller.js';
 import { changePassword } from '../controllers/auth/change_password_controller.js';
 import { verifyToken } from '../middleware/auth.js';
 
-import pool from '../db/connection.js';
-import { createResetRateLimit } from '../middleware/password_reset_rate_limit.js';
+// Temporarily disabled: import pool from '../db/connection.js';
+// Temporarily disabled: import { createResetRateLimit } from '../middleware/password_reset_rate_limit.js';
 
 const router = express.Router();
 
@@ -17,8 +17,8 @@ router.post('/signup', signup);
 router.post('/signin', signin);
 router.post('/librarian/signin', librarianSignin);
 router.post('/librarian-staff/signin', librarianStaffSignin);
-router.post('/forgot-password', createResetRateLimit(pool, 'forgot'), forgotPassword);
-router.post('/reset-password', createResetRateLimit(pool, 'reset'), resetPassword);
+// Temporarily disabled: router.post('/forgot-password', createResetRateLimit(pool, 'forgot'), forgotPassword);
+// Temporarily disabled: router.post('/reset-password', createResetRateLimit(pool, 'reset'), resetPassword);
 router.post('/change-password', verifyToken, changePassword);
 router.post('/logout', (req, res) => {
     const options = { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax' };
