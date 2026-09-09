@@ -1,12 +1,12 @@
 // Reuse the existing member-only borrowing endpoint; authorization stays server-side.
-window.initialiseBookBorrow = function (book, button, message, onSuccess) {
+window.initialiseBookBorrow = function (book, button, message, onSuccess, onError) {
   const physical = String(book.book_type).toLowerCase() === 'physical';
   button.hidden = !physical;
-  button.disabled = Number(book.available_copies) < 1;
-  button.textContent = button.disabled ? 'Currently unavailable' : 'Borrow Book';
+  button.disabled = Boolean(book._borrowed) || Number(book.available_copies) < 1;
+  button.textContent = book._borrowed ? 'Borrowed' : button.disabled ? 'Currently unavailable' : 'Borrow Book';
   button.addEventListener('click', async () => {
     const token = localStorage.getItem('token');
-    if (!token) { message.textContent = 'Please sign in to borrow this book.'; return; }
+    if (!token) { message.textContent = 'Please sign in to borrow this book.'; onError?.(message.textContent); return; }
     button.disabled = true;
     message.textContent = 'Borrowing book…';
     try {
@@ -21,6 +21,7 @@ window.initialiseBookBorrow = function (book, button, message, onSuccess) {
       onSuccess?.();
     } catch (error) {
       message.textContent = error.message;
+      onError?.(error.message);
       button.disabled = false;
     }
   });
