@@ -15,6 +15,8 @@
     <script defer src="/js/mobile_navigation.js"></script>
     <script defer src="/js/site_search.js"></script>
     <script defer src="/js/homepage.js"></script>
+    <link rel="stylesheet" href="/css/book_catalog.css">
+    <script defer src="/js/book_borrow.js"></script>
     <script defer src="/js/book_detail.js"></script>
 
 </head>
@@ -93,43 +95,34 @@
     </header>
 
     <!-- book detail -->
-    <section class="py-14 md:py-20">
-        <div class="max-w-6xl mx-auto px-6">
-            <a href="/book_category.html" class="inline-flex items-center gap-2 mb-8 text-sm font-medium text-stone-600 hover:text-stone-900 transition">
-                <i class="fa-solid fa-arrow-left"></i> Back to books
-            </a>
-
-            <div id="bookDetailContent" class="grid md:grid-cols-[320px_1fr] gap-10 md:gap-14" hidden>
-                <div>
-                    <img id="bookCover" src="/images/1stbook.jpg" alt="" class="w-full rounded-xl object-cover shadow-md">
-                </div>
-                <div>
-                    <span id="bookCategory" class="uppercase text-xs tracking-wide text-stone-400 font-semibold"></span>
-                    <h1 id="bookTitle" class="text-3xl md:text-4xl font-bold mt-2 text-stone-900"></h1>
-                    <p id="bookIsbn" class="text-sm text-stone-400 mt-2"></p>
-                    <p id="bookAvailability" class="mt-4 font-semibold text-sm inline-block px-3 py-1 rounded-full"></p>
-                    <p id="bookDescription" class="mt-6 leading-relaxed text-stone-600"></p>
-                    <div class="mt-8 flex flex-wrap gap-3">
-                        <a id="bookReadPdf" class="inline-flex items-center gap-2 bg-amber-500 hover:bg-amber-400 text-stone-900 font-medium px-6 py-3 rounded-full transition" target="_blank" rel="noopener noreferrer" hidden>
-                            <i class="fa-solid fa-book-open"></i> Read PDF
-                        </a>
-                        <button type="button" id="bookWishlistButton" class="inline-flex items-center gap-2 bg-stone-900 hover:bg-stone-700 text-white font-medium px-6 py-3 rounded-full transition disabled:cursor-not-allowed disabled:opacity-60">
-                            <i class="fa-regular fa-heart" aria-hidden="true"></i><span>Add to Wishlist</span>
-                        </button>
-                    </div>
-                    <p id="bookWishlistMessage" class="mt-3 min-h-6 text-sm text-stone-600" aria-live="polite"></p>
-                </div>
+    <main class="book-detail-page">
+      <div class="book-detail-shell">
+        <a href="/books" class="detail-action">&larr; Back to Books</a>
+        <div id="bookDetailContent" class="details-content" hidden>
+          <div class="book-cover-frame"><img id="bookCover" src="/images/placeholder-book.svg" alt=""></div>
+          <div class="details-info">
+            <span id="bookCategory" class="book-category"></span>
+            <h1 id="bookTitle"></h1>
+            <dl class="details-meta">
+              <div id="bookAuthorRow" hidden><dt>Author</dt><dd id="bookAuthor"></dd></div>
+              <div><dt>ISBN</dt><dd id="bookIsbn"></dd></div>
+              <div><dt>Book type</dt><dd id="bookType"></dd></div>
+            </dl>
+            <p id="bookAvailability" class="availability"></p>
+            <p id="bookDescription" class="details-description"></p>
+            <div class="details-actions">
+              <button type="button" id="bookWishlistButton" class="detail-action">Add to Wishlist</button>
+              <button type="button" id="bookBorrowButton" class="detail-action detail-action--primary">Borrow Book</button>
+              <a id="bookReadPdf" class="detail-action detail-action--primary" target="_blank" rel="noopener noreferrer" hidden>Read PDF</a>
             </div>
-
-            <div id="bookNotFound" class="text-center py-20" hidden>
-                <h2 class="text-2xl font-bold text-stone-900">Book not found</h2>
-                <p class="mt-2 text-stone-500">The book you're looking for doesn't exist or may have been removed.</p>
-                <a href="/book_category.html" class="inline-block mt-6 bg-stone-900 hover:bg-stone-700 text-white font-medium px-6 py-3 rounded-full transition">Browse all books</a>
-            </div>
-
-            <div id="bookLoading" class="text-center py-20 text-stone-400">Loading book details…</div>
+            <p id="bookWishlistMessage" class="details-message" aria-live="polite"></p>
+            <p id="bookBorrowMessage" class="details-message" aria-live="polite"></p>
+          </div>
         </div>
-    </section>
+        <div id="bookNotFound" class="books-state" hidden><h2>Book not found</h2><p>This book may have been removed.</p><a class="detail-action" href="/books">Browse all books</a></div>
+        <div id="bookLoading" class="books-state">Loading book details?</div>
+      </div>
+    </main>
 
     <!-- Footer -->
     <footer id="contact" class="bg-stone-800 text-white py-10">

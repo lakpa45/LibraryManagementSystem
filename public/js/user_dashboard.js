@@ -71,7 +71,7 @@
   if (accountForm) {
     const changePwBtn = accountForm.querySelector(".btn--ghost");
     // This button uses email reset, which is temporarily unavailable.
-    if (changePwBtn) changePwBtn.hidden = true;
+    if (changePwBtn) { changePwBtn.hidden = true; changePwBtn.style.display = 'none'; }
   }
 
   /* nav scrollspy */

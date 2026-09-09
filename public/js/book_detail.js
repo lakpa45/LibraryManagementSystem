@@ -46,11 +46,14 @@ function populateBookDetail(book) {
   cover.onerror = () => { cover.onerror = null; cover.src = '/images/placeholder-book.svg'; };
   document.getElementById('bookCategory').textContent = book.category_name || '';
   document.getElementById('bookTitle').textContent = book.title;
-  document.getElementById('bookIsbn').textContent = book.isbn ? `ISBN: ${book.isbn}` : '';
+  document.getElementById('bookIsbn').textContent = book.isbn || 'Not recorded';
+  document.getElementById('bookType').textContent = book.book_type || 'Not recorded';
+  document.getElementById('bookAuthor').textContent = book.author || '';
+  document.getElementById('bookAuthorRow').hidden = !book.author;
   document.getElementById('bookDescription').textContent = book.description || '';
 
   const readPdf = document.getElementById('bookReadPdf');
-  if (typeof book.pdf_file === 'string' && book.pdf_file.trim()) {
+  if (String(book.book_type).toLowerCase() === 'digital' && typeof book.pdf_file === 'string' && book.pdf_file.trim()) {
     readPdf.href = book.pdf_file;
     readPdf.hidden = false;
   } else {
@@ -62,8 +65,13 @@ function populateBookDetail(book) {
   const available = Number(book.available_copies) > 0;
   availability.textContent = available ? `${book.available_copies} of ${book.total_copies} copies available` : 'Currently unavailable';
   availability.className = available
-    ? 'mt-4 font-semibold text-sm inline-block px-3 py-1 rounded-full bg-green-100 text-green-700'
-    : 'mt-4 font-semibold text-sm inline-block px-3 py-1 rounded-full bg-red-100 text-red-700';
+    ? 'availability availability--yes'
+    : 'availability availability--no';
+  window.initialiseBookBorrow(book, document.getElementById('bookBorrowButton'), document.getElementById('bookBorrowMessage'), () => {
+    book.available_copies = Math.max(0, Number(book.available_copies) - 1);
+    availability.textContent = book.available_copies ? `${book.available_copies} copies available` : 'Currently unavailable';
+    availability.className = book.available_copies ? 'availability availability--yes' : 'availability availability--no';
+  });
 }
 
 async function initialiseWishlist(bookId) {
@@ -99,7 +107,7 @@ async function initialiseWishlist(bookId) {
     const currentToken = localStorage.getItem('token');
     if (!currentToken) {
       message.textContent = 'Please log in to add books to your wishlist.';
-      if (window.confirm('Please log in to add books to your wishlist. Open the login form now?')) window.location.href = '/#login';
+      document.getElementById('loginBtn')?.click();
       return;
     }
 
