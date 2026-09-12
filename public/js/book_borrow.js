@@ -14,7 +14,7 @@ window.initialiseBookBorrow = function (book, button, message, onSuccess, onErro
         method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ book_id: book.book_id })
       });
-      const result = await response.json();
+      const result = await LibraryAPI.read(response);
       if (!response.ok) throw new Error(result.message || 'Unable to borrow this book.');
       button.textContent = 'Borrowed';
       message.textContent = 'Book borrowed successfully. View it in My Account.';

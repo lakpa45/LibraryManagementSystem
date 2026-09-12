@@ -53,7 +53,7 @@ async function loadMyLoans() {
     try {
         const response = await fetch('/api/loans/my-loans', { headers: userAuthHeaders() });
         if (!response.ok) throw new Error('Failed to load loans');
-        const loans = await response.json();
+        const loans = await LibraryAPI.read(response);
 
         document.getElementById('borrowedCount').textContent = loans.length;
         const dueSoonCount = loans.filter((l) => daysUntil(l.due_date) <= 2).length;
@@ -123,7 +123,7 @@ async function loadMyActivity() {
     try {
         const response = await fetch('/api/loans/my-activity', { headers: userAuthHeaders() });
         if (!response.ok) throw new Error('Failed to load activity');
-        const activity = await response.json();
+        const activity = await LibraryAPI.read(response);
         panel.querySelector('.dashboard-activity-loading')?.remove();
 
         const rowsHtml = activity.length
@@ -159,7 +159,7 @@ async function loadMyProfile() {
     try {
         const response = await fetch('/api/members/me', { headers: userAuthHeaders() });
         if (!response.ok) throw new Error('Failed to load profile');
-        const member = await response.json();
+        const member = await LibraryAPI.read(response);
         const fullName = `${member.first_name || ''} ${member.last_name || ''}`.trim();
         const uniqueId = member.card_no || 'Pending approval';
 
@@ -197,7 +197,7 @@ async function loadMyWishlist() {
             throw new Error('Failed to load wishlist');
         }
 
-        const wishlist = await response.json();
+        const wishlist = await LibraryAPI.read(response);
         count.textContent = wishlist.length;
         panel.querySelectorAll('.wish-item, .dashboard-empty').forEach(item => item.remove());
 
@@ -233,7 +233,7 @@ async function removeDashboardWishlistBook(button) {
             method: 'DELETE',
             headers: userAuthHeaders()
         });
-        const result = await response.json();
+        const result = await LibraryAPI.read(response);
         if (!response.ok) throw new Error(result.message || 'Unable to remove book');
         if (window.libToast) window.libToast(`"${title}" removed from wishlist`);
         await loadMyWishlist();

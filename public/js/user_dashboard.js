@@ -66,6 +66,16 @@
     if (event.target.closest("a")) setDashboardMenu(false);
   });
 
+  document.getElementById('dashboardLogout')?.addEventListener('click', async event => {
+    event.preventDefault();
+    try {
+      const response = await fetch('/api/auth/logout', {method:'POST'});
+      if (!response.ok) throw new Error();
+      localStorage.removeItem('token');
+      location.href = '/';
+    } catch { toast('Unable to sign out. Please try again.'); }
+  });
+
   /* account settings form */
   const accountForm = document.querySelector(".account__fields");
   if (accountForm) {

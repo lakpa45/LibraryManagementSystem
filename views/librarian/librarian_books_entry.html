@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="/js/api_client.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Librarian Books Entry</title>
@@ -46,7 +47,7 @@
           <li><a href="/book_category.html">Categories</a></li>
           <li><a href="/#picks">Latest</a></li>
           <li><a href="/#contact">Contact</a></li>
-          <li class="menu__auth" data-menu-auth><a href="#" data-login-trigger><i class="fa-regular fa-user"></i> Login</a></li>
+          <li class="menu__auth" data-menu-auth><a href="/?login=1" data-login-trigger><i class="fa-regular fa-user"></i> Login</a></li>
           <li class="menu__auth" data-menu-auth><a href="/register.html">Register</a></li>
         </ul>
       </nav>
@@ -57,7 +58,7 @@
           <div class="search-dropdown" id="navbarSearchDropdown"></div>
         </form>
         <div class="navbar__auth" id="navbarAuth">
-          <a href="#" class="navbar__auth-link" id="loginBtn"><i class="fa-regular fa-user"></i> Login</a>
+          <a href="/?login=1" class="navbar__auth-link" id="loginBtn"><i class="fa-regular fa-user"></i> Login</a>
           <a href="/register.html" class="navbar__auth-link navbar__auth-link--accent" id="registerBtn">Register</a>
         </div>
         <div class="navbar__user" id="navbarUser" hidden>

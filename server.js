@@ -13,6 +13,7 @@ import loanRoutes from './routes/loanRoutes.js';
 import memberRoutes from './routes/memberRoutes.js';
 import librarianRoutes from './routes/librarianRoutes.js';
 import wishlistRoutes from './routes/wishlistRoutes.js';
+import { requireMemberPage } from './middleware/member_page_guard.js';
 import { requireAdminPage } from './middleware/admin_page_guard.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -41,6 +42,11 @@ app.use((req, res, next) => {
     if (directProtectedView) return res.status(404).send('Not found');
     next();
 });
+app.get('/login', (req, res) => res.redirect('/?login=1'));
+app.get(['/user_dashboard.html', '/member/dashboard'], requireMemberPage, (req, res) => res.sendFile(path.join(__dirname, 'views', 'user_dashboard.html')));
+// Retired localStorage demos lead to the real account/loan workflows.
+app.get('/studentlibrary.html', (req, res) => res.redirect('/user_dashboard.html'));
+app.get('/overdue&fine.html', (req, res) => res.redirect('/librarian/borrow-return'));
 app.use(express.static(path.join(__dirname, 'views'), {
     index: false
 }));
@@ -103,7 +109,7 @@ app.get('/admin/:page', requireAdminPage, (req, res) => {
         return res.status(404).send('Not found');
     }
 
-    if (req.params.page === 'librarians' && req.admin.role !== 'admin') {
+    if (req.admin.role !== 'admin') {
         return res.status(403).send('Administrator access required');
     }
 

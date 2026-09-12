@@ -51,6 +51,10 @@ test('full HTTP integration against inspected PostgreSQL schema', {skip:!connect
    assert.equal((await request(route)).status,401);assert.equal((await request(route,{token:memberToken})).status,403);
   }
   assert.equal((await request('/api/librarians',{token:staffToken})).status,403);
+  assert.equal((await request('/admin/dashboard',{cookie:'adminSession='+staffToken})).status,403);
+  assert.equal((await request('/user_dashboard.html')).status,302);
+  assert.equal((await request('/user_dashboard.html',{cookie:'userSession='+adminToken})).status,302);
+  assert.equal((await request('/member/dashboard',{cookie:'userSession='+memberToken})).status,200);
   assert.equal((await request('/librarian/dashboard')).status,302);
   assert.equal((await request('/librarian/dashboard',{cookie:'adminSession='+staffToken})).status,200);
   assert.equal((await request('/librarian/librarian_dashboard.html')).status,404);
@@ -108,6 +112,8 @@ test('full HTTP integration against inspected PostgreSQL schema', {skip:!connect
  await t.test('invalid input returns client errors, not database errors',async()=>{
   assert.equal((await request('/api/auth/signin',{method:'POST',body:{email:'member@example.test',password:{}}})).status,400);
   assert.equal((await request('/api/categories/not-an-id')).status,400);
+  assert.equal((await request('/api/categories',{method:'POST',token:staffToken})).status,400);
+  assert.equal((await request('/api/categories',{method:'POST',token:staffToken,body:{category_name:'x'.repeat(101)}})).status,400);
   assert.equal((await request('/api/loans/issue',{method:'POST',token:staffToken,body:{member_id:memberId,book_id:bookId,issue_date:'2026-02-31',due_date:'2026-03-04'}})).status,400);
   assert.equal((await request('/api/members/me',{method:'PUT',token:memberToken,body:{first_name:'Audit',last_name:'Member',email:'invalid'}})).status,400);
  });
@@ -117,13 +123,9 @@ test('full HTTP integration against inspected PostgreSQL schema', {skip:!connect
   assert.equal((await request('/api/members/me',{token:memberToken})).status,200);
   for(const route of ['/api/members','/api/dashboard/stats','/api/dashboard/activity','/api/dashboard/due-soon','/api/loans/active','/api/loans/books/search?q=Audit','/api/loans/my-activity']) assert.equal((await request(route,{token:route.includes('my-activity')?memberToken:staffToken})).status,200);
  });
- await t.test('password reset through actual routes, SDK, database and unchanged login',async()=>{
-  assert.equal((await request('/api/auth/forgot-password',{method:'POST',body:{email:'MEMBER@example.test'}})).status,200);
-  const token=await new Promise(resolve=>{child.once('message',m=>resolve(m.token));child.send({type:'getResetToken'});});assert.ok(token);
-  assert.equal((await request('/api/auth/reset-password',{method:'POST',body:{token,newPassword:'Changed123!'}})).status,200);
-  assert.equal((await request('/api/auth/reset-password',{method:'POST',body:{token,newPassword:'ChangedAgain123!'}})).status,400);
-  assert.equal((await request('/api/auth/signin',{method:'POST',body:{email:'member@example.test',password:'Changed123!'}})).status,200);
-  assert.equal((await request('/api/auth/signin',{method:'POST',body:{email:'member@example.test',password:pass}})).status,401);
+ await t.test('disabled password reset routes stay unavailable',async()=>{
+  for(const route of ['/api/auth/forgot-password','/api/auth/reset-password']) assert.equal((await request(route,{method:'POST',body:{}})).status,404);
+  for(const route of ['/forgot-password','/forgot_password.html','/forget_password.html','/reset-password','/reset_password.html']) assert.equal((await request(route)).status,404);
  });
  await t.test('uploads enforce type, signature, exact 35 MB boundary and cleanup',async()=>{
   const before=new Set(await fs.readdir('public/pdfs/books'));
@@ -142,7 +144,7 @@ test('full HTTP integration against inspected PostgreSQL schema', {skip:!connect
   for(const name of await fs.readdir('public/pdfs/books'))if(!before.has(name)){assert.ok(name.includes('audit-'));await fs.unlink('public/pdfs/books/'+name);}
  });
  await t.test('missing/stale frontend links and assets',async()=>{
-  for(const route of ['/','/books','/categories','/e-books','/my-books','/register','/forgot_password.html','/reset_password.html','/output.css','/js/forget_password.js']) assert.equal((await request(route)).status,200);
+  for(const route of ['/','/books','/categories','/e-books','/my-books','/register','/output.css','/js/forget_password.js']) assert.equal((await request(route)).status,200);
   assert.equal((await request('/api/unknown')).status,404);
   assert.equal((await request('/api/auth/reset-password',{method:'POST',raw:'{broken'})).status,400);
  });

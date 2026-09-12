@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+<script src="/js/api_client.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -41,12 +42,12 @@
                         </a>
                     </li>
                     <li>
-                        <a href="index.html#popular">
+                        <a href="/#products">
                             Popular
                         </a>
                     </li>
                     <li>
-                        <a href="index.html#recent">
+                        <a href="/books?sort=newest">
                             Recent Books
                         </a>
                     </li>
@@ -192,6 +193,6 @@
     </div>
 </footer>
 <script src="/js/category_page.js"></script>
-<script>loadCategoryBooks(6);</script>
+<script>loadCategoryBooks("Computer Science");</script>
 </body>
 </html>

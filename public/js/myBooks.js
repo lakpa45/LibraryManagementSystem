@@ -55,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const session=token();removing.add(book.book_id);button.disabled=true;
     try {
       const response=await fetch(`/api/wishlist/${book.book_id}`,{method:'DELETE',headers:{Authorization:`Bearer ${session}`}});
-      const result=await response.json();if(session!==token())return;
+      const result=await LibraryAPI.read(response);if(session!==token())return;
       if(!response.ok){if(response.status===401||response.status===403){localStorage.removeItem('token');signedOut();}throw Error(result.message||'Unable to remove this book. Please try again.');}
       const position=books.findIndex(b=>b.book_id===book.book_id);
       books=books.filter(b=>b.book_id!==book.book_id);
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const session=token();controller=new AbortController();search.disabled=true;grid.setAttribute('aria-busy','true');skeletons();
     try {
       const response=await fetch('/api/wishlist',{headers:{Authorization:`Bearer ${session}`},signal:controller.signal});
-      const result=await response.json();if(version!==loadVersion||session!==token())return;
+      const result=await LibraryAPI.read(response);if(version!==loadVersion||session!==token())return;
       if(!response.ok){if(response.status===401||response.status===403){localStorage.removeItem('token');return signedOut();}throw Error(result.message||'Please try again in a moment.');}
       if(!Array.isArray(result))throw Error('The library sent an unexpected response. Please try again.');
       books=result.map(book=>({...book,wishlisted:true}));search.disabled=false;render();

@@ -20,7 +20,7 @@ function wireWishlistButtons(scope = document) {
     const active = button.getAttribute('aria-pressed') === 'true';
     try {
       const response = await fetch(`/api/wishlist/${button.dataset.id}`, { method: active ? 'DELETE' : 'POST', headers: { Authorization: `Bearer ${token}` } });
-      const result = await response.json(); if (!response.ok) throw new Error(result.message || 'Wishlist update failed');
+      const result = await LibraryAPI.read(response); if (!response.ok) throw new Error(result.message || 'Wishlist update failed');
       button.setAttribute('aria-pressed', String(result.wishlisted)); button.textContent = result.wishlisted ? '♥ In Wishlist' : '♡ Add to Wishlist';
     } catch (error) { window.alert(error.message); } finally { button.disabled = false; }
   }));

@@ -180,7 +180,7 @@ async function fetchBooks(apiPage, { addHistory = false } = {}) {
     try {
         const response = await fetch(`/api/books/free?${params.toString()}`);
         const contentType = response.headers.get('content-type') || '';
-        const data = contentType.includes('application/json') ? await response.json() : {};
+        const data = contentType.includes('application/json') ? await LibraryAPI.read(response) : {};
 
         if (!response.ok) {
             throw new Error(data.message || 'Unable to load free e-books.');

@@ -9,8 +9,9 @@ dateElement.textContent = today.toLocaleDateString("en-US", {
 
 async function loadStats() {
     try {
-        const response = await fetch('/api/dashboard/stats', { headers: adminAuthHeaders() });
-        const stats = await response.json();
+        const response = await LibraryAPI.staffFetch('/api/dashboard/stats', { headers: adminAuthHeaders() });
+        if (!response.ok) throw new Error('Unable to load dashboard statistics.');
+        const stats = await LibraryAPI.read(response);
 
         animateCount('stat-books', stats.books);
         animateCount('stat-borrowers', stats.borrowers);
@@ -28,7 +29,7 @@ function toggleAdminMenu() {
 
 async function logout() {
     if (confirm("Are you sure you want to logout?")) {
-        try { await fetch('/api/auth/logout', { method: 'POST' }); } catch (error) { console.error('Server sign-out failed:', error); }
+        try { await LibraryAPI.staffFetch('/api/auth/logout', { method: 'POST' }); } catch (error) { console.error('Server sign-out failed:', error); }
         localStorage.removeItem('adminToken');
         localStorage.removeItem('librarianToken');
         window.location.href = "/";
@@ -49,6 +50,8 @@ function closePasswordModal() {
 
 async function changePassword(event) {
     event.preventDefault();
+    const submit = event.target.querySelector('[type=submit]');
+    if (submit.disabled) return;
 
     const currentPassword =
         document.getElementById("currentPassword").value;
@@ -77,18 +80,19 @@ async function changePassword(event) {
     }
 
     try {
-        const response = await fetch('/api/auth/change-password', {
+        submit.disabled = true;
+        const response = await LibraryAPI.staffFetch('/api/auth/change-password', {
             method: 'POST', headers: { ...adminAuthHeaders(), 'Content-Type': 'application/json' },
             body: JSON.stringify({ currentPassword, newPassword })
         });
-        const result = await response.json().catch(() => ({}));
+        const result = await LibraryAPI.read(response).catch(() => ({}));
         message.textContent = result.message || (response.ok ? 'Password changed successfully.' : 'Unable to change password.');
         message.className = `text-sm mb-4 ${response.ok ? 'text-green-600' : 'text-red-600'}`;
         if (response.ok) setTimeout(closePasswordModal, 1500);
     } catch (error) {
         message.textContent = 'Unable to change password. Please try again.';
         message.className = 'text-sm mb-4 text-red-600';
-    }
+    } finally { submit.disabled = false; }
 }
 
 function animateCount(
@@ -145,9 +149,9 @@ async function loadRecentActivity() {
     if (!tbody) return;
 
     try {
-        const response = await fetch('/api/dashboard/activity', { headers: adminAuthHeaders() });
+        const response = await LibraryAPI.staffFetch('/api/dashboard/activity', { headers: adminAuthHeaders() });
         if (!response.ok) throw new Error('Failed to load activity');
-        const activity = await response.json();
+        const activity = await LibraryAPI.read(response);
 
         if (!activity.length) {
             tbody.innerHTML = '<tr><td colspan="5" class="px-5 py-6 text-center text-[#8A7B5C] text-sm">No recent activity.</td></tr>';
@@ -176,9 +180,9 @@ async function loadDueSoon() {
     if (!list) return;
 
     try {
-        const response = await fetch('/api/dashboard/due-soon', { headers: adminAuthHeaders() });
+        const response = await LibraryAPI.staffFetch('/api/dashboard/due-soon', { headers: adminAuthHeaders() });
         if (!response.ok) throw new Error('Failed to load due list');
-        const dueSoon = await response.json();
+        const dueSoon = await LibraryAPI.read(response);
 
         if (!dueSoon.length) {
             list.innerHTML = '<li class="px-5 py-6 text-center text-[#8A7B5C] text-sm">Nothing due soon.</li>';

@@ -44,8 +44,8 @@ try {
  await send('Page.enable');await send('Runtime.enable');
  await send('Fetch.enable',{patterns:[{urlPattern:'https://*'}]});
  const pause=()=>new Promise(r=>setTimeout(r,250));
- const go=async page=>{await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}${page}`});await pause();};
- const check=async expression=>{assert.ok(await evaluate(expression),expression);};
+ const go=async page=>{await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}${page}`});for(let i=0;i<100;i++){if(await evaluate(`document.readyState==='complete'`))break;await pause();}await pause();};
+ const check=async expression=>{assert.ok(await evaluate(expression),expression+' '+JSON.stringify(await evaluate(`({width:innerWidth,cards:[...document.querySelectorAll('.book-card')].map(e=>e.getBoundingClientRect().height)})`)));};
  const click=async selector=>{await evaluate(`document.querySelector(${JSON.stringify(selector)}).click()`);await pause();};
  for(const [width,columns] of [[1440,4],[1024,3],[768,2],[375,1],[320,1]]){
   await send('Emulation.setDeviceMetricsOverride',{width,height:900,deviceScaleFactor:1,mobile:false});

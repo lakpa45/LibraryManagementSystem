@@ -1,43 +1,6 @@
 {
   "pages": [
-    "/add_to_cart.html",
-    "/all_books.html",
-    "/book.html?id=1",
-    "/book_category.html",
-    "/book_detail.html?id=1",
-    "/categories.html",
-    "/commerce.html",
-    "/computer_science.html",
-    "/engineering_mathematics.html",
-    "/e_books.html",
-    "/forget_password.html",
-    "/frequently_asked_question.html",
-    "/fundamental_of_physics.html",
-    "/index.html",
-    "/law.html",
-    "/literature.html",
-    "/management.html",
-    "/mathematics.html",
-    "/my_books.html",
-    "/novels.html",
-    "/old_index.html",
-    "/overdue&fine.html",
-    "/POM_bookdetail.html",
-    "/register.html",
-    "/reset_password.html",
-    "/science.html",
-    "/socialscience.html",
-    "/studentlibrary.html",
-    "/user_dashboard.html",
-    "/admin/dashboard",
-    "/admin/librarians",
-    "/librarian/dashboard",
-    "/librarian/book-categories",
-    "/librarian/books",
-    "/librarian/borrow-return",
-    "/librarian/members",
-    "/librarian/pending-members",
-    "/librarian/register-member"
+    "/all_books.html"
   ],
   "widths": [
     1440,
@@ -46,5 +9,11 @@
     320
   ],
   "externalResources": "mocked",
-  "failures": []
+  "failures": [
+    {
+      "page": "/all_books.html @320",
+      "status": 409,
+      "url": "/api/categories/3"
+    }
+  ]
 }

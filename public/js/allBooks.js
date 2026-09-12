@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const initialQuery = new URLSearchParams(window.location.search).get('q');
   if (initialQuery) search.value = initialQuery;
 
+  const initialSort = new URLSearchParams(location.search).get('sort');
+  if ([...sort.options].some(option => option.value === initialSort)) sort.value = initialSort;
+  document.getElementById('bookFilters').addEventListener('submit', event => { event.preventDefault(); clearTimeout(debounceTimer); page = 1; loadBooks(); });
   const token = () => localStorage.getItem('token');
   const authHeaders = () => token() ? { Authorization: `Bearer ${token()}` } : {};
   const {element} = window.BookUI;
@@ -31,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
     message.replaceChildren(document.createTextNode('Please sign in to add books to your wishlist. '));
     message.style.color = '#a33a30';
     const link = element('a', '', 'Sign in');
-    link.href = '#';
+    link.href = '/?login=1';
     link.addEventListener('click', event => {
       event.preventDefault();
       document.getElementById('loginBtn')?.click();
@@ -52,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const response = await fetch(`/api/wishlist/${book.book_id}`, {
         method: book.wishlisted ? 'DELETE' : 'POST', headers: authHeaders()
       });
-      const result = await response.json();
+      const result = await LibraryAPI.read(response);
       if (!response.ok) throw new Error(result.message || 'Wishlist update failed');
       book.wishlisted = result.wishlisted;
       button.textContent = button.dataset.compact ? (book.wishlisted ? '\u2665' : '\u2661') : (book.wishlisted ? 'Remove from Wishlist' : 'Add to Wishlist');
@@ -97,7 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (category.value) params.set('category', category.value);
     try {
       const response = await fetch(`/api/books?${params}`, { headers: authHeaders(), signal: requestController.signal });
-      const result = await response.json();
+      const result = await LibraryAPI.read(response);
       if (!response.ok) throw new Error(result.message || 'Unable to load books');
       books = result.books;
       pages = result.pages;
@@ -122,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
       const response = await fetch('/api/categories');
       if (!response.ok) return;
-      const categories = await response.json();
+      const categories = await LibraryAPI.read(response);
       categories.forEach(item => {
         const option = element('option', '', item.category_name);
         option.value = item.category_id;

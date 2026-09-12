@@ -2,14 +2,15 @@ const FINE_PER_DAY = 5;
 let loans = [], books = [], selectedMember = null, returnMember = null;
 let filters = { text: '', status: 'all' };
 const el = (id) => document.getElementById(id);
-const today = () => new Date().toISOString().slice(0, 10);
+const localISO = date => `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+const today = () => localISO(new Date());
 const days = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
 const dateText = (value) => value ? new Date(`${String(value).slice(0, 10)}T00:00:00`).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
 const safe = (value) => String(value ?? '').replace(/[&<>'"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[c]));
 
 async function api(url, options) {
-    const response = await fetch(url, options);
-    const body = await response.json().catch(() => ({}));
+    const response = await LibraryAPI.staffFetch(url, options);
+    const body = await LibraryAPI.read(response).catch(() => ({}));
     if (!response.ok) {
         const error = new Error(body.message || 'Request failed.');
         error.status = response.status;
@@ -162,7 +163,7 @@ async function loadMemberLoans(memberId) {
 
 function updateDue() {
     const value = el('i-issue-date').value || today(), due = new Date(`${value}T00:00:00`);
-    due.setDate(due.getDate() + Number(el('i-period').value)); el('i-due-preview').textContent = dateText(due.toISOString().slice(0, 10));
+    due.setDate(due.getDate() + Number(el('i-period').value)); el('i-due-preview').textContent = dateText(localISO(due));
 }
 
 el('tab-issue').onclick = () => { el('tab-issue').classList.add('active'); el('tab-return').classList.remove('active'); el('issue-form').classList.remove('hidden'); el('return-form').classList.add('hidden'); };
@@ -191,8 +192,8 @@ el('issue-form').onsubmit = async (e) => {
     const button = el('borrow-button'), issueDate = el('i-issue-date').value || today(), due = new Date(`${issueDate}T00:00:00`);
     due.setDate(due.getDate() + Number(el('i-period').value)); button.disabled = true;
     try {
-        const result = await api('/api/loans/issue', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ member_id: selectedMember.member_id, book_id: Number(el('i-book-id').value), issue_date: issueDate, due_date: due.toISOString().slice(0, 10) }) });
-        toast(result.message || 'Book borrowed successfully.', `Due ${dateText(due.toISOString().slice(0, 10))}`); el('i-book-id').value = ''; el('i-book-search').value = ''; el('i-book-detail').classList.add('hidden');
+        const result = await api('/api/loans/issue', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ member_id: selectedMember.member_id, book_id: Number(el('i-book-id').value), issue_date: issueDate, due_date: localISO(due) }) });
+        toast(result.message || 'Book borrowed successfully.', `Due ${dateText(localISO(due))}`); el('i-book-id').value = ''; el('i-book-search').value = ''; el('i-book-detail').classList.add('hidden');
         const refreshes = [loadBooks(), loadLoans(), findMember('i-member-search', 'i-member-detail', 'borrow')];
         if (returnMember?.member_id === selectedMember.member_id) refreshes.push(loadMemberLoans(selectedMember.member_id));
         await Promise.all(refreshes);

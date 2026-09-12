@@ -29,17 +29,21 @@ const preselectedCategoryId = urlParams.get('category_id') || urlParams.get('cat
 
 async function loadBooks() {
     try {
-        const response = await fetch('/api/books');
-        books = await response.json();
+        const response = await LibraryAPI.staffFetch('/api/books');
+        if (!response.ok) throw new Error((await LibraryAPI.read(response)).message || 'Unable to load records.');
+        books = await LibraryAPI.read(response);
         render();
     } catch (err) {
-        console.error(err);
+        emptyState.classList.remove('hidden');
+        emptyStateTitle.textContent = 'Books unavailable';
+        emptyStateMessage.textContent = err.message;
     }
 }
 
 async function loadCategories() {
-    const response = await fetch('/api/categories');
-    const result = await response.json().catch(() => []);
+    const response = await LibraryAPI.staffFetch('/api/categories');
+        if (!response.ok) throw new Error((await LibraryAPI.read(response)).message || 'Unable to load records.');
+    const result = await LibraryAPI.read(response).catch(() => []);
     if (!response.ok) throw new Error(result.message || 'Unable to load categories.');
     categories = result;
     categoryInput.replaceChildren(new Option('Select a category', ''));
@@ -97,6 +101,7 @@ bookTypeToggle.addEventListener('click', event => {
 bookTypeToggle.addEventListener('keydown', event => {
     if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return;
     event.preventDefault();
+    if (bookForm.querySelector('[type=submit]').disabled) return;
     const type = event.key === 'ArrowLeft' || event.key === 'Home' ? 'physical' : 'digital';
     selectBookType(type);
     bookTypeToggle.querySelector(`[data-book-type="${type}"]`).focus();
@@ -137,7 +142,7 @@ function buildCard(book) {
                 <p class="text-sm text-[#4A5A50] leading-snug">
                     ${escapeHTML(book.description || "No description yet.")}
                 </p>
-                ${book.pdf_file ? `<a href="${escapeHTML(book.pdf_file)}" target="_blank" rel="noopener" class="mt-3 inline-flex items-center text-sm font-semibold text-[#8A6500] hover:underline">Open PDF</a>` : ''}
+                ${book.pdf_file ? `<a href="${escapeHTML(book.pdf_file)}" target="_blank" rel="noopener noreferrer" class="mt-3 inline-flex items-center text-sm font-semibold text-[#8A6500] hover:underline">Open PDF</a>` : ''}
             </div>
         </div>
     `;
@@ -174,6 +179,9 @@ function openModal(book = null) {
     pdfFileName.textContent = "";
     pdfFileName.classList.add("hidden");
 
+    document.getElementById("bookCopies").disabled = Boolean(book);
+    document.getElementById("bookCopies").value = book ? Number(book.total_copies || 0) : 1;
+    document.getElementById("bookCopies").title = book ? "Copy counts are set when adding a book." : "";
     document.getElementById("bookID").value = book ? book.book_id : "";
     document.getElementById("bookTitle").value = book ? book.title : "";
     document.getElementById("bookDesc").value = book ? book.description || "" : "";
@@ -280,7 +288,7 @@ bookForm.addEventListener("submit", async event => {
         const url = id ? `/api/books/${id}` : "/api/books";
         const method = id ? "PUT" : "POST";
 
-        const response = await fetch(url, {
+        const response = await LibraryAPI.staffFetch(url, {
             method,
             body: formData
         });
@@ -289,7 +297,7 @@ bookForm.addEventListener("submit", async event => {
             closeModal();
             await loadBooks();
         } else {
-            const result = await response.json().catch(() => ({}));
+            const result = await LibraryAPI.read(response).catch(() => ({}));
             alert(result.message || "Something went wrong.");
         }
     } catch (err) {
@@ -322,7 +330,7 @@ document.getElementById("confirmDeleteBtn").addEventListener("click", async () =
     confirmButton.disabled = true;
 
     try {
-        const response = await fetch(`/api/books/${deleteTargetId}`, {
+        const response = await LibraryAPI.staffFetch(`/api/books/${deleteTargetId}`, {
             method: "DELETE"
         });
 
@@ -334,7 +342,7 @@ document.getElementById("confirmDeleteBtn").addEventListener("click", async () =
 
         const contentType = response.headers.get("content-type") || "";
         const result = contentType.includes("application/json")
-            ? await response.json()
+            ? await LibraryAPI.read(response)
             : {};
         alert(result.message || "Unable to remove the book.");
     } catch (err) {
@@ -353,4 +361,4 @@ document.addEventListener("keydown", event => {
 
 Promise.all([loadBooks(), loadCategories()]).then(() => {
     if (preselectedCategoryId) openModal();
-});
+}).catch(error => alert(error.message));

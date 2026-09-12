@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="/js/api_client.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Literature | ICFAI Library</title>
@@ -40,11 +41,11 @@
 </li>
 
 <li>
-<a href="index.html#popular">Popular</a>
+<a href="/#products">Popular</a>
 </li>
 
 <li>
-<a href="index.html#recent">Recent Books</a>
+<a href="/books?sort=newest">Recent Books</a>
 </li>
 
 </ul>
@@ -231,6 +232,6 @@ Sort: Popular
 </footer>
 
 <script src="/js/category_page.js"></script>
-<script>loadCategoryBooks(9);</script>
+<script>loadCategoryBooks("Literature");</script>
 </body>
 </html>

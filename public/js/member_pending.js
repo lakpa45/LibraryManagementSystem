@@ -2,11 +2,12 @@ let pending = [];
 
 async function loadPending() {
     try {
-        const response = await fetch('/api/members/pending');
-        pending = await response.json();
+        const response = await LibraryAPI.staffFetch('/api/members/pending');
+        if (!response.ok) throw new Error((await LibraryAPI.read(response)).message || 'Unable to load records.');
+        pending = await LibraryAPI.read(response);
         render();
     } catch (err) {
-        console.error(err);
+        showToast('Unable to load pending registrations. Please refresh and try again.');
     }
 }
 
@@ -81,16 +82,16 @@ function showToast(msg) {
 
 document.getElementById('pending-lists').addEventListener('click', async (e) => {
     const button = e.target.closest('button[data-action]');
-    if (!button) return;
+    if (!button || button.disabled) return;
 
     const id = button.dataset.id;
     const action = button.dataset.action;
-    const matchingButtons = document.querySelectorAll(`button[data-action="${action}"][data-id="${id}"]`);
+    const matchingButtons = document.querySelectorAll(`button[data-action][data-id="${id}"]`);
 
     try {
         matchingButtons.forEach((item) => { item.disabled = true; });
-        const response = await fetch(`/api/members/${id}/${action}`, { method: 'PUT' });
-        const result = await response.json();
+        const response = await LibraryAPI.staffFetch(`/api/members/${id}/${action}`, { method: 'PUT' });
+        const result = await LibraryAPI.read(response);
 
         if (response.ok) {
             showToast(action === 'approve' ? `Approved — Card ID ${result.member.card_no}` : 'Registration rejected');

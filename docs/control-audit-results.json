@@ -1,0 +1,558 @@
+{
+  "pages": [
+    {
+      "page": "/all_books.html",
+      "links": [
+        {
+          "href": "/#contact",
+          "label": "+91-123-1234",
+          "visible": true,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "/#contact",
+          "label": "contact@gmail.com",
+          "visible": true,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "/#contact",
+          "label": "Need Help?",
+          "visible": true,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "/",
+          "label": "APNA LIBRARY",
+          "visible": true,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "/",
+          "label": "Home",
+          "visible": true,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "/books",
+          "label": "Books",
+          "visible": true,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "/categories",
+          "label": "Categories",
+          "visible": true,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "/e-books",
+          "label": "E-Books",
+          "visible": true,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "/my-books",
+          "label": "My Books",
+          "visible": true,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "/?login=1",
+          "label": "Login",
+          "visible": false,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "/register.html",
+          "label": "Register",
+          "visible": false,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "/?login=1",
+          "label": "Login",
+          "visible": false,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "/register.html",
+          "label": "Register",
+          "visible": false,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "/user_dashboard.html",
+          "label": "My account",
+          "visible": true,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "/register.html",
+          "label": "Register now",
+          "visible": true,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "/categories",
+          "label": "Categories",
+          "visible": true,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "/#products",
+          "label": "Popular Books",
+          "visible": true,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "/books?sort=newest",
+          "label": "New Arrivals",
+          "visible": true,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "/e-books",
+          "label": "Digital Library",
+          "visible": true,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "/frequently_asked_question.html#borrowing",
+          "label": "Borrowing Policy",
+          "visible": true,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "/frequently_asked_question.html",
+          "label": "FAQ",
+          "visible": true,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "mailto:library@apna.edu",
+          "label": "Contact Librarian",
+          "visible": true,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "tel:+911231234",
+          "label": "+91-123-1234",
+          "visible": true,
+          "target": "",
+          "rel": ""
+        },
+        {
+          "href": "mailto:library@apna.edu",
+          "label": "library@apna.edu",
+          "visible": true,
+          "target": "",
+          "rel": ""
+        }
+      ],
+      "controls": [
+        {
+          "tag": "INPUT",
+          "id": "menu-btn",
+          "type": "checkbox",
+          "label": "",
+          "disabled": false,
+          "visible": false,
+          "events": [
+            "change"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "BUTTON",
+          "id": "menuToggle",
+          "type": "button",
+          "label": "Open menu",
+          "disabled": false,
+          "visible": false,
+          "events": [
+            "click"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "BUTTON",
+          "id": "menuClose",
+          "type": "button",
+          "label": "Close menu",
+          "disabled": false,
+          "visible": false,
+          "events": [
+            "click"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "FORM",
+          "id": "navbarSearchForm",
+          "label": "",
+          "visible": true,
+          "events": [
+            "submit"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "INPUT",
+          "id": "navbarSearchInput",
+          "type": "search",
+          "label": "Search",
+          "disabled": false,
+          "visible": true,
+          "events": [
+            "input",
+            "keydown"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "BUTTON",
+          "id": "userMenuBtn",
+          "type": "button",
+          "label": "ME",
+          "disabled": false,
+          "visible": true,
+          "events": [
+            "click"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "BUTTON",
+          "id": "logoutBtn",
+          "type": "button",
+          "label": "Logout",
+          "disabled": false,
+          "visible": true,
+          "events": [
+            "click"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "BUTTON",
+          "id": "menuOverlay",
+          "type": "button",
+          "label": "Close menu",
+          "disabled": false,
+          "visible": false,
+          "events": [
+            "click"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "FORM",
+          "id": "bookFilters",
+          "label": "SearchCategoryAll categoriesAudit UpdatedAvailabilityAll booksAvailableUnavailableSortNewest addedTi",
+          "visible": true,
+          "events": [
+            "submit"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "INPUT",
+          "id": "bookSearch",
+          "type": "search",
+          "label": "",
+          "disabled": false,
+          "visible": true,
+          "events": [
+            "input"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "SELECT",
+          "id": "categoryFilter",
+          "type": "select-one",
+          "label": "All categoriesAudit Updated",
+          "disabled": false,
+          "visible": true,
+          "events": [
+            "change"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "SELECT",
+          "id": "availabilityFilter",
+          "type": "select-one",
+          "label": "All booksAvailableUnavailable",
+          "disabled": false,
+          "visible": true,
+          "events": [
+            "change"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "SELECT",
+          "id": "sortFilter",
+          "type": "select-one",
+          "label": "Newest addedTitle A–ZTitle Z–AMost available",
+          "disabled": false,
+          "visible": true,
+          "events": [
+            "change"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "type": "button",
+          "label": "View Details",
+          "disabled": false,
+          "visible": true,
+          "events": [
+            "click"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "type": "button",
+          "label": "♡",
+          "disabled": false,
+          "visible": true,
+          "events": [
+            "click"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "type": "button",
+          "label": "View Details",
+          "disabled": false,
+          "visible": true,
+          "events": [
+            "click"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "type": "button",
+          "label": "♡",
+          "disabled": false,
+          "visible": true,
+          "events": [
+            "click"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "BUTTON",
+          "id": "previousPage",
+          "type": "button",
+          "label": "Previous",
+          "disabled": true,
+          "visible": true,
+          "events": [
+            "click"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "BUTTON",
+          "id": "nextPage",
+          "type": "button",
+          "label": "Next",
+          "disabled": true,
+          "visible": true,
+          "events": [
+            "click"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "BUTTON",
+          "id": "detailsClose",
+          "type": "submit",
+          "label": "×",
+          "disabled": false,
+          "visible": false,
+          "events": [
+            "click"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "BUTTON",
+          "id": "authClose",
+          "type": "button",
+          "label": "",
+          "disabled": false,
+          "visible": true,
+          "events": [
+            "click"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "FORM",
+          "id": "loginForm",
+          "label": "Welcome back\n                Login to your account\n                \n                    Email\n      ",
+          "visible": true,
+          "events": [
+            "submit"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "INPUT",
+          "id": "",
+          "type": "email",
+          "label": "",
+          "disabled": false,
+          "visible": true,
+          "events": [],
+          "inline": []
+        },
+        {
+          "tag": "INPUT",
+          "id": "",
+          "type": "password",
+          "label": "",
+          "disabled": false,
+          "visible": true,
+          "events": [],
+          "inline": []
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "type": "button",
+          "label": "Show password",
+          "disabled": false,
+          "visible": true,
+          "events": [
+            "click"
+          ],
+          "inline": []
+        },
+        {
+          "tag": "SELECT",
+          "id": "loginRole",
+          "type": "select-one",
+          "label": "Select a role\n                        Member\n                        Librarian\n                     ",
+          "disabled": false,
+          "visible": true,
+          "events": [],
+          "inline": []
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "type": "submit",
+          "label": "Login",
+          "disabled": false,
+          "visible": true,
+          "events": [],
+          "inline": []
+        }
+      ],
+      "duplicateIds": []
+    }
+  ],
+  "links": [
+    {
+      "url": "/#contact",
+      "status": 200,
+      "valid": true
+    },
+    {
+      "url": "/",
+      "status": 200,
+      "valid": true
+    },
+    {
+      "url": "/books",
+      "status": 200,
+      "valid": true
+    },
+    {
+      "url": "/categories",
+      "status": 200,
+      "valid": true
+    },
+    {
+      "url": "/e-books",
+      "status": 200,
+      "valid": true
+    },
+    {
+      "url": "/my-books",
+      "status": 200,
+      "valid": true
+    },
+    {
+      "url": "/?login=1",
+      "status": 200,
+      "valid": true
+    },
+    {
+      "url": "/register.html",
+      "status": 200,
+      "valid": true
+    },
+    {
+      "url": "/user_dashboard.html",
+      "status": 200,
+      "valid": true
+    },
+    {
+      "url": "/#products",
+      "status": 200,
+      "valid": true
+    },
+    {
+      "url": "/books?sort=newest",
+      "status": 200,
+      "valid": true
+    },
+    {
+      "url": "/frequently_asked_question.html#borrowing",
+      "status": 200,
+      "valid": true
+    },
+    {
+      "url": "/frequently_asked_question.html",
+      "status": 200,
+      "valid": true
+    }
+  ]
+}

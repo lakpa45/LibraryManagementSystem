@@ -74,7 +74,7 @@ form.addEventListener('submit', async (e) => {
       })
     });
 
-    const result = await response.json();
+    const result = await LibraryAPI.read(response);
 
     if (response.ok) {
       document.getElementById('prev-id').textContent = result.member.card_no;

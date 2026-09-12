@@ -11,6 +11,7 @@ function showError(message) {
 
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
+    if (submitButton.disabled) return;
     errorEl.classList.add('hidden');
     successEl.classList.add('hidden');
 
@@ -25,7 +26,7 @@ form.addEventListener('submit', async (e) => {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return showError('Please enter a valid email address.');
     if (!/^\d{10}$/.test(phone)) return showError('Phone number must contain exactly 10 digits.');
     if (department.length < 2) return showError('Please enter your department.');
-    if (password.length < 8 || password.length > 72) return showError('Password must be between 8 and 72 characters.');
+    if (password.length < 8 || new TextEncoder().encode(password).length > 72) return showError('Password must be at least 8 characters and at most 72 bytes.');
     if (password !== confirmPassword) return showError('Passwords do not match.');
 
     const nameParts = fullName.split(' ');
@@ -41,10 +42,10 @@ form.addEventListener('submit', async (e) => {
             body: JSON.stringify({ first_name, last_name, email, phone, department, password })
         });
 
-        const result = await response.json().catch(() => ({}));
+        const result = await LibraryAPI.read(response).catch(() => ({}));
 
         if (response.ok) {
-            successEl.textContent = 'Registration successful! Redirecting to sign in…';
+            successEl.textContent = 'Registration submitted for librarian approval. Redirecting to sign in…';
             successEl.classList.remove('hidden');
             form.reset();
             window.setTimeout(() => { window.location.href = '/#login'; }, 1500);

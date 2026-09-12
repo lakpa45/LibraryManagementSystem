@@ -52,7 +52,7 @@ function attachBookSearch(inputId, dropdownId) {
                 signal: activeController.signal
             });
             if (!response.ok) throw new Error('Search failed');
-            const books = await response.json();
+            const books = await LibraryAPI.read(response);
             renderResults(books);
         } catch (err) {
             if (err.name !== 'AbortError') {

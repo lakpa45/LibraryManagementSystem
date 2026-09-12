@@ -1,13 +1,15 @@
 function categoryEscape(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-async function loadCategoryBooks(categoryId) {
+async function loadCategoryBooks(categoryName) {
    const grid = document.querySelector('.books-grid');
    if (!grid) return;
 
+   grid.textContent = 'Loading books?';
    try {
        const response = await fetch('/api/books');
-       const books = await response.json();
+       if (!response.ok) throw new Error('Unable to load books. Please try again.');
+       const books = await LibraryAPI.read(response);
 
-       const filtered = books.filter(b => String(b.category_id) === String(categoryId));
+       const filtered = books.filter(b => String(b.category_name).toLowerCase() === categoryName.toLowerCase());
 
        if (filtered.length === 0) {
            grid.innerHTML = `<p style="grid-column: 1 / -1; text-align: center; color: #888;">No books in this category yet.</p>`;
@@ -35,7 +37,7 @@ async function loadCategoryBooks(categoryId) {
 
        wireCategoryCartButtons(grid, filtered);
    } catch (err) {
-       console.error(err);
+       grid.textContent = err.message;
    }
 }
 

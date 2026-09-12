@@ -1,0 +1,34 @@
+[
+  {
+    "name": "staff category add/edit/cancel and mixed member/staff cookie authorization",
+    "status": "PASS"
+  },
+  {
+    "name": "staff book add/edit and copy count display",
+    "status": "PASS"
+  },
+  {
+    "name": "catalog search submit, details close, wishlist add/remove and borrow",
+    "status": "PASS"
+  },
+  {
+    "name": "member profile, renew and real book details",
+    "status": "PASS"
+  },
+  {
+    "name": "category deletion conflict shows an error and restores the button",
+    "status": "PASS"
+  },
+  {
+    "name": "public registration validates input and creates a pending account",
+    "status": "PASS"
+  },
+  {
+    "name": "approve registration using staff page and login/logout every role",
+    "status": "PASS"
+  },
+  {
+    "name": "staff issue and return preserve the selected calendar due date",
+    "status": "PASS"
+  }
+]

@@ -39,8 +39,8 @@ function renderLibrarians() {
 async function loadLibrarians() {
     librarianTableBody.innerHTML = '<tr><td colspan="4" class="loading-cell">Loading librarians...</td></tr>';
     try {
-        const response = await fetch('/api/librarians', { headers: adminHeaders() });
-        const data = await response.json();
+        const response = await LibraryAPI.staffFetch('/api/librarians', { headers: adminHeaders() });
+        const data = await LibraryAPI.read(response);
         if (!response.ok) throw new Error(data.message || 'Unable to load librarians.');
         librarians = Array.isArray(data) ? data : [];
         renderLibrarians();
@@ -72,6 +72,7 @@ librarianFilter.addEventListener('input', renderLibrarians);
 
 librarianForm.addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (saveLibrarianButton.disabled) return;
     librarianMessage.textContent = '';
 
     const formData = new FormData(librarianForm);
@@ -86,7 +87,7 @@ librarianForm.addEventListener('submit', async (event) => {
     saveLibrarianButton.disabled = true;
     saveLibrarianButton.textContent = 'Adding...';
     try {
-        const response = await fetch('/api/librarians', {
+        const response = await LibraryAPI.staffFetch('/api/librarians', {
             method: 'POST',
             headers: { ...adminHeaders(), 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -96,7 +97,7 @@ librarianForm.addEventListener('submit', async (event) => {
                 password
             })
         });
-        const data = await response.json();
+        const data = await LibraryAPI.read(response);
         if (!response.ok) throw new Error(data.message || 'Unable to add librarian.');
 
         librarians.push(data.librarian);
@@ -122,7 +123,7 @@ document.addEventListener('keydown', (event) => {
 
 document.querySelector('[data-admin-logout]').addEventListener('click', async (event) => {
     event.preventDefault();
-    try { await fetch('/api/auth/logout', { method: 'POST' }); } catch (error) { console.error('Server sign-out failed:', error); }
+    try { await LibraryAPI.staffFetch('/api/auth/logout', { method: 'POST' }); } catch (error) { console.error('Server sign-out failed:', error); }
     localStorage.removeItem('adminToken');
     localStorage.removeItem('librarianToken');
     window.location.href = '/';

@@ -4,11 +4,13 @@ let state = { search:'', type:'all', sort:'recent' };
 
 async function loadMembers() {
     try {
-        const response = await fetch('/api/members');
-        members = await response.json();
+        const response = await LibraryAPI.staffFetch('/api/members');
+        if (!response.ok) throw new Error((await LibraryAPI.read(response)).message || 'Unable to load records.');
+        members = await LibraryAPI.read(response);
         render();
     } catch (err) {
-        console.error(err);
+        const body = document.getElementById('members-body');
+        body.innerHTML = '<tr><td colspan=7>Unable to load members. Please refresh and try again.</td></tr>';
     }
 }
 
@@ -131,10 +133,12 @@ document.getElementById('drawer-close').addEventListener('click', closeDrawer);
 backdrop.addEventListener('click', closeDrawer);
 
 document.getElementById('drawer-delete').addEventListener('click', async () => {
-    if (!activeId) return;
+    const button = document.getElementById('drawer-delete');
+    if (!activeId || button.disabled) return;
+    button.disabled = true;
 
     try {
-        const response = await fetch(`/api/members/${activeId}`, { method: 'DELETE' });
+        const response = await LibraryAPI.staffFetch(`/api/members/${activeId}`, { method: 'DELETE' });
 
         if (response.ok) {
             closeDrawer();
@@ -143,10 +147,10 @@ document.getElementById('drawer-delete').addEventListener('click', async () => {
             document.getElementById('toast-msg').textContent = 'Member removed';
             toast.classList.remove('translate-y-24', 'opacity-0');
             setTimeout(() => toast.classList.add('translate-y-24', 'opacity-0'), 2500);
-        }
+        } else { alert((await LibraryAPI.read(response)).message || 'Unable to remove member.'); }
     } catch (err) {
-        console.error(err);
-    }
+        alert('Unable to remove member. Please try again.');
+    } finally { button.disabled = false; }
 });
 
 loadMembers();

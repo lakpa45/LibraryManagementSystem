@@ -98,9 +98,9 @@ export const createBook = async (req, res) => {
         const numCopies = Number(req.body.copies);
         const bookType = String(req.body.book_type || 'physical').trim().toLowerCase();
 
-        if (!title) {
+        if (!title || title.length > 255) {
             await removeUploadedFiles(req);
-            return res.status(400).json({ message: 'Title is required' });
+            return res.status(400).json({ message: 'Title must contain 1 to 255 characters' });
         }
         if (isbn && isbn.length > 20) {
             await removeUploadedFiles(req);
@@ -174,9 +174,9 @@ export const updateBook = async (req, res) => {
         const categoryId = Number(req.body.category_id);
         const bookType = String(req.body.book_type || 'physical').trim().toLowerCase();
 
-        if (!title) {
+        if (!title || title.length > 255) {
             await removeUploadedFiles(req);
-            return res.status(400).json({ message: 'Title is required' });
+            return res.status(400).json({ message: 'Title must contain 1 to 255 characters' });
         }
         if (isbn && isbn.length > 20) {
             await removeUploadedFiles(req);

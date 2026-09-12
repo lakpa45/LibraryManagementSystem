@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="/js/api_client.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Dashboard · APNA Library</title>
@@ -18,10 +19,11 @@
     <button type="button" class="dashboard-menu-toggle" id="dashboardMenuToggle" aria-label="Open dashboard menu" aria-controls="dashboardNavigation" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
     <nav class="menu" id="dashboardNavigation" aria-label="Dashboard navigation">
       <button type="button" class="dashboard-menu-close" id="dashboardMenuClose" aria-label="Close dashboard menu"><i class="fa-solid fa-xmark"></i></button>
-      <a href="#" class="is-active"><i class="fa-solid fa-gauge"></i> Dashboard</a>
+      <a href="/user_dashboard.html" class="is-active"><i class="fa-solid fa-gauge"></i> Dashboard</a>
       <a href="#books"><i class="fa-solid fa-book"></i> My Books</a>
       <a href="#wishlist"><i class="fa-regular fa-heart"></i> Wishlist</a>
       <a href="#account"><i class="fa-regular fa-id-badge"></i> Settings</a>
+      <a href="/" id="dashboardLogout">Logout</a>
     </nav>
   </div>
   <button type="button" class="dashboard-menu-overlay" id="dashboardMenuOverlay" aria-label="Close dashboard menu" tabindex="-1"></button>
@@ -75,7 +77,7 @@
         <span class="eyebrow">CURRENTLY BORROWED</span>
         <h2>Your active loans</h2>
       </div>
-      <a href="#" class="link-more">View full history <i class="fa-solid fa-arrow-right"></i></a>
+      <a href="#activity" class="link-more">Recent activity <i class="fa-solid fa-arrow-right"></i></a>
     </div>
     <div class="books__grid">
       <article class="book-card">
@@ -143,7 +145,7 @@
 </section>
 
 <section class="split">
-  <div class="panel">
+  <div class="panel" id="activity">
     <h2>Recent Activity</h2>
     <div class="activity-row">
       <span class="activity-row__ic"><i class="fa-solid fa-arrow-right-to-bracket"></i></span>

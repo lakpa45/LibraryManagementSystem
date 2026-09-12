@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="/js/api_client.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Science Books | ICFAI Library</title>
@@ -29,8 +30,8 @@ href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
 <ul class="menu">
 <li><a href="index.html">Home</a></li>
 <li><a href="book_category.html">Categories</a></li>
-<li><a href="index.html#popular">Popular</a></li>
-<li><a href="index.html#recent">Recent Books</a></li>
+<li><a href="/#products">Popular</a></li>
+<li><a href="/books?sort=newest">Recent Books</a></li>
 </ul>
 </nav>
 
@@ -171,6 +172,6 @@ science, astronomy and other scientific disciplines.
     </div>
 </footer>
 <script src="/js/category_page.js"></script>
-<script>loadCategoryBooks(4);</script>
+<script>loadCategoryBooks("Science");</script>
 </body>
 </html>

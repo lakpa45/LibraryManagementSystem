@@ -11,11 +11,13 @@ const deleteModal = document.getElementById("deleteModal");
 
 async function loadCategories() {
     try {
-        const response = await fetch('/api/categories');
-        categories = await response.json();
+        const response = await LibraryAPI.staffFetch('/api/categories');
+        if (!response.ok) throw new Error((await LibraryAPI.read(response)).message || 'Unable to load records.');
+        categories = await LibraryAPI.read(response);
         render();
     } catch (err) {
-        console.error(err);
+        emptyState.classList.remove('hidden');
+        emptyState.querySelector('p').textContent = err.message;
     }
 }
 
@@ -130,18 +132,21 @@ categoryModal.addEventListener("click", event => {
 
 categoryForm.addEventListener("submit", async event => {
     event.preventDefault();
+    const submit = categoryForm.querySelector('[type=submit]');
+    if (submit.disabled) return;
     const id = document.getElementById("categoryID").value;
     const category_name = document.getElementById("categoryName").value.trim();
     const description = document.getElementById("categoryDesc").value.trim();
     const color = document.getElementById("categoryColor").value;
 
     if (!category_name) return;
+    submit.disabled = true;
 
     try {
         const url = id ? `/api/categories/${id}` : "/api/categories";
         const method = id ? "PUT" : "POST";
 
-        const response = await fetch(url, {
+        const response = await LibraryAPI.staffFetch(url, {
             method,
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ category_name, description, color })
@@ -151,13 +156,13 @@ categoryForm.addEventListener("submit", async event => {
             closeModal();
             await loadCategories();
         } else {
-            const result = await response.json();
+            const result = await LibraryAPI.read(response);
             alert(result.message || "Something went wrong.");
         }
     } catch (err) {
         console.error(err);
         alert("Something went wrong. Please try again.");
-    }
+    } finally { submit.disabled = false; }
 });
 
 function openDeleteModal(id) {
@@ -176,20 +181,22 @@ deleteModal.addEventListener("click", event => {
 });
 
 document.getElementById("confirmDeleteBtn").addEventListener("click", async () => {
-    if (!deleteTargetId) return;
+    const button = document.getElementById('confirmDeleteBtn');
+    if (!deleteTargetId || button.disabled) return;
+    button.disabled = true;
 
     try {
-        const response = await fetch(`/api/categories/${deleteTargetId}`, {
+        const response = await LibraryAPI.staffFetch(`/api/categories/${deleteTargetId}`, {
             method: "DELETE"
         });
 
         if (response.ok) {
             closeDeleteModal();
             await loadCategories();
-        }
+        } else { alert((await LibraryAPI.read(response)).message || "Unable to remove this category."); }
     } catch (err) {
-        console.error(err);
-    }
+        alert("Unable to remove this category. Please try again.");
+    } finally { button.disabled = false; }
 });
 
 document.addEventListener("keydown", event => {

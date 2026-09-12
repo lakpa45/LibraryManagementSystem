@@ -54,6 +54,7 @@
 
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
+    if (submitButton.disabled) return;
     message.textContent = '';
     message.className = 'form-message';
     if (!validate()) {
@@ -65,7 +66,7 @@
     submitButton.disabled = true;
     submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding…';
     try {
-      const response = await fetch('/api/auth/signup', {
+      const response = await LibraryAPI.staffFetch('/api/auth/signup', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           first_name: fields.firstName.value.trim(), last_name: fields.lastName.value.trim(),
@@ -75,7 +76,7 @@
           valid_till: fields.validTill.value || null, address: fields.address.value.trim()
         })
       });
-      const result = await response.json();
+      const result = await LibraryAPI.read(response);
       if (!response.ok) throw new Error(result.message || 'Unable to add member.');
       document.getElementById('previewCard').textContent = result.member.card_no;
       message.textContent = `Member added. Card ID: ${result.member.card_no}${result.temp_password ? ` · Temporary password: ${result.temp_password}` : ''}`;

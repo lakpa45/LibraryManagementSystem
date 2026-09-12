@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script src="/js/api_client.js"></script>
    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>APNA Library</title>
@@ -87,15 +88,15 @@
                         <i class="fa-solid fa-magnifying-glass"></i>
                         <input type="search" placeholder="Search Library" aria-label="Search">
                     </form>
-                    <a href="#products" class="navbar__ic" aria-label="Wishlist">
+                    <a href="/books" class="navbar__ic" aria-label="Wishlist">
                         <i class="fa-regular fa-heart"></i>
                     </a>
                     <div class="navbar__auth" id="navbarAuth">
-                        <a href="#" class="navbar__auth-link" id="loginBtn">
+                        <a href="/?login=1" class="navbar__auth-link" id="loginBtn">
                             <i class="fa-regular fa-user"></i>
                             Login
                         </a>
-                        <a href="#" class="navbar__auth-link navbar__auth-link--accent" id="registerBtn">
+                        <a href="/register" class="navbar__auth-link navbar__auth-link--accent" id="registerBtn">
                             Register
                         </a>
                     </div>
@@ -111,7 +112,7 @@
                                     <small id="userMenuEmail">user@example.com</small>
                                 </div>
                             </div>
-                            <a href="#" class="navbar__user-menu-item">
+                            <a href="/user_dashboard.html" class="navbar__user-menu-item">
                                 <i class="fa-regular fa-id-badge"></i>
                                 My account
                             </a>
@@ -384,7 +385,7 @@
                 <span class="eyebrow">NEW ARRIVALS </span>
                 <h2> Recently Added</h2>
             </div>
-            <a href="#" class="link-more">
+            <a href="/books" class="link-more">
                 View Library
                 <i class="fa-solid fa-arrow-right"></i>
             </a>

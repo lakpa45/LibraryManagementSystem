@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', () => {
     /* ---- sticky header ---- */
     const header = document.querySelector('.header');
     const onScroll = () => {
-        header.classList.toggle('is-stuck', window.scrollY > 10);
+        header?.classList.toggle('is-stuck', window.scrollY > 10);
     };
     window.addEventListener('scroll', onScroll);
     onScroll();
@@ -256,6 +256,7 @@ function initAuth() {
             const base64Url = token.split('.')[1];
             const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
             const payload = JSON.parse(atob(base64));
+            if (payload.exp * 1000 <= Date.now()) return null;
             return { email: payload.email };
         } catch (err) {
             return null;
@@ -329,6 +330,8 @@ function initAuth() {
     /* --- login (real backend) --- */
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        const submit = loginForm.querySelector('[type=submit]');
+        if (submit.disabled) return;
         clearErrors();
         
         const formData = new FormData(loginForm);
@@ -366,15 +369,17 @@ function initAuth() {
         }
 
         try {
+            submit.disabled = true;
             const response = await fetch(loginOption.endpoint, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, password, role })
             });
 
-            const result = await response.json().catch(() => ({}));
+            const result = await LibraryAPI.read(response).catch(() => ({}));
 
             if (response.ok && result.token) {
+                ['token','adminToken','librarianToken'].forEach(key => localStorage.removeItem(key));
                 localStorage.setItem(loginOption.tokenKey, result.token);
                 closeModal();
                 if (role === 'member') renderAuthState();
@@ -389,7 +394,7 @@ function initAuth() {
         } catch (err) {
             console.error(err);
             loginError.textContent = 'Unable to connect to the server. Please try again.';
-        }
+        } finally { submit.disabled = false; }
     });
 
     /* --- user dropdown --- */

@@ -21,7 +21,7 @@ async function loadBookDetail() {
       showBookNotFound(loading, content, notFound);
       return;
     }
-    const book = await response.json();
+    const book = await LibraryAPI.read(response);
     populateBookDetail(book);
     loading.hidden = true;
     notFound.hidden = true;
@@ -92,7 +92,7 @@ async function initialiseWishlist(bookId) {
     button.disabled = true;
     try {
       const response = await fetch(`/api/wishlist/${bookId}/status`, { headers: { Authorization: `Bearer ${token}` } });
-      const result = await response.json();
+      const result = await LibraryAPI.read(response);
       if (response.ok) wishlisted = Boolean(result.wishlisted);
       else if (response.status !== 401 && response.status !== 403) message.textContent = result.message || 'Unable to load wishlist status.';
       render();
@@ -118,7 +118,7 @@ async function initialiseWishlist(bookId) {
         method: wishlisted ? 'DELETE' : 'POST',
         headers: { Authorization: `Bearer ${currentToken}` }
       });
-      const result = await response.json();
+      const result = await LibraryAPI.read(response);
       if (!response.ok && response.status !== 409) throw new Error(result.message || 'Unable to update wishlist.');
       wishlisted = response.status === 409 ? true : Boolean(result.wishlisted);
       render();
