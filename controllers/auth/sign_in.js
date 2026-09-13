@@ -33,7 +33,7 @@ export const signin = async (req, res) => {
         }
 
         const token = jwt.sign(
-            { id: member.member_id, email: member.email, role: 'member' },
+            { id: member.member_id, email: member.email, role: 'member', mustChangePassword: member.must_change_password === true },
             process.env.JWT_SECRET,
             { expiresIn: '1h' }
         );
@@ -45,7 +45,7 @@ export const signin = async (req, res) => {
             maxAge: 60 * 60 * 1000
         });
 
-        res.status(200).json({ message: 'Sign in successful', token });
+        res.status(200).json({ message: 'Sign in successful', token, mustChangePassword: member.must_change_password === true });
     } catch (err) {
         console.error(err);
         res.status(500).json({ message: 'Server error' });

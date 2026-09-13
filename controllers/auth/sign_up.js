@@ -1,3 +1,4 @@
+import { memberDefaultPassword } from '../../utils/member_default_password.js';
 import { randomBytes } from 'node:crypto';
 import { validDate } from '../../utils/date_validation.js';
 import bcrypt from 'bcrypt';
@@ -74,7 +75,12 @@ export const signup = async (req, res) => {
             return res.status(409).json({ message: 'Email already registered' });
         }
 
-        const finalPassword = password || generateTempPassword(first_name, dob);
+        const librarianCreated = req.user?.role === 'librarian';
+        if (librarianCreated && !validDate(dob)) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ message: 'First name and a valid date of birth are required.' });
+        }
+        const finalPassword = librarianCreated ? memberDefaultPassword(first_name, dob) : password || generateTempPassword();
         const hashedPassword = await bcrypt.hash(finalPassword, 10);
         const cardNo = await generateCardNo(client, member_type);
 
@@ -86,12 +92,13 @@ export const signup = async (req, res) => {
         );
 
         const newMember = insertResult.rows[0];
+        if (librarianCreated) await client.query('UPDATE member SET must_change_password = TRUE WHERE member_id = $1', [newMember.member_id]);
         await client.query('COMMIT');
 
         res.status(201).json({
             message: 'Sign up successful',
             member: newMember,
-            temp_password: password ? undefined : finalPassword
+            temp_password: librarianCreated || password ? undefined : finalPassword
         });
     } catch (err) {
         if (client) await client.query('ROLLBACK').catch(() => {});

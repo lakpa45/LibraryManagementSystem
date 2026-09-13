@@ -14,6 +14,10 @@ import { verifyToken } from '../middleware/auth.js';
 const router = express.Router();
 
 router.post('/signup', signup);
+router.post('/librarian/members', verifyToken, (req, res, next) => {
+    if (req.user.role !== 'librarian') return res.status(403).json({ message: 'Librarian access required' });
+    next();
+}, signup);
 router.post('/signin', signin);
 router.post('/librarian/signin', librarianSignin);
 router.post('/librarian-staff/signin', librarianStaffSignin);

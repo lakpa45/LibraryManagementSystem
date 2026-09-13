@@ -30,9 +30,13 @@ export const changePassword = async (req, res) => {
       await client.query('ROLLBACK');
       return res.status(400).json({ message: 'Current password is incorrect.' });
     }
+    if (await bcrypt.compare(newPassword, result.rows[0].password)) {
+      await client.query('ROLLBACK');
+      return res.status(400).json({ message: 'Choose a password different from your current password.' });
+    }
     const passwordHash = await bcrypt.hash(newPassword, 10);
     await client.query(
-      `UPDATE ${account.table} SET password = $1 WHERE ${account.idColumn} = $2`,
+      `UPDATE ${account.table} SET password = $1${account.table === 'member' ? ', must_change_password = FALSE' : ''} WHERE ${account.idColumn} = $2`,
       [passwordHash, req.user.id]
     );
     if (account.table === 'member') await client.query('UPDATE password_reset SET used = TRUE WHERE LOWER(email) = LOWER($1) AND used = FALSE', [result.rows[0].email]);

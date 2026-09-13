@@ -29,13 +29,13 @@
 
   const formatDate = (value) => value
     ? new Date(`${value}T00:00:00`).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
-    : '—';
+    : 'â€”';
 
   function updatePreview() {
     const name = `${fields.firstName.value.trim()} ${fields.lastName.value.trim()}`.trim();
     document.getElementById('previewName').textContent = name || 'New Member';
     document.getElementById('previewType').textContent = 'Student';
-    document.getElementById('previewDepartment').textContent = fields.department.value.trim() || '—';
+    document.getElementById('previewDepartment').textContent = fields.department.value.trim() || 'â€”';
     document.getElementById('previewExpiry').textContent = formatDate(fields.validTill.value);
   }
 
@@ -64,9 +64,9 @@
     }
 
     submitButton.disabled = true;
-    submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Adding…';
+    submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Addingâ€¦';
     try {
-      const response = await LibraryAPI.staffFetch('/api/auth/signup', {
+      const response = await LibraryAPI.staffFetch('/api/auth/librarian/members', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           first_name: fields.firstName.value.trim(), last_name: fields.lastName.value.trim(),
@@ -79,7 +79,7 @@
       const result = await LibraryAPI.read(response);
       if (!response.ok) throw new Error(result.message || 'Unable to add member.');
       document.getElementById('previewCard').textContent = result.member.card_no;
-      message.textContent = `Member added. Card ID: ${result.member.card_no}${result.temp_password ? ` · Temporary password: ${result.temp_password}` : ''}`;
+      message.textContent = `Member added. Card ID: ${result.member.card_no}. Default password: first four characters of the first name (same capitalization), followed by birth year. The member must change it on first login after approval.`;
       message.classList.add('success');
     } catch (error) {
       message.textContent = error.message || 'Unable to add member. Please try again.';

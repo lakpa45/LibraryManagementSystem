@@ -19,6 +19,7 @@ test('full HTTP integration against inspected PostgreSQL schema', {skip:!connect
  t.after(async()=>{if(child&&!child.killed){child.kill();await new Promise(r=>child.once('exit',r));}await db.end();await admin.query(`DROP DATABASE ${database} WITH (FORCE)`);await admin.end();});
  await db.query(await fs.readFile(new URL('./fixtures/production-schema.sql',import.meta.url),'utf8'));
  await db.query(await fs.readFile(new URL('../migrations/008_secure_password_reset.sql',import.meta.url),'utf8'));
+ await db.query(await fs.readFile(new URL('../migrations/009_member_first_login_password.sql',import.meta.url),'utf8'));
  const listener=net.createServer();await new Promise(r=>listener.listen(0,'127.0.0.1',r));const port=listener.address().port;await new Promise(r=>listener.close(r));
  child=spawn(process.execPath,['tests/audit-server.mjs'],{cwd:process.cwd(),windowsHide:true,env:{...process.env,LIBRARY_AUDIT:'1',DATABASE_URL:uri.toString(),PORT:String(port),NODE_ENV:'test',RESEND_API_KEY:'re_local_test_only',EMAIL_FROM:'Library <onboarding@resend.dev>',FRONTEND_URL:`http://localhost:${port}`,JWT_SECRET:crypto.randomBytes(32).toString('hex')},stdio:['ignore','pipe','pipe','ipc']});
  let ready=false;const errors=[];child.stdout.on('data',data=>{if(String(data).includes('Server running'))ready=true;});child.stderr.on('data',data=>errors.push(String(data)));
