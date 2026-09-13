@@ -25,13 +25,14 @@
       <header class="top-header"><button type="button" class="mobile-menu" id="mobileMenuBtn" aria-label="Open navigation" aria-expanded="false"><i class="fa-solid fa-bars"></i></button><div class="top-search"><a class="action-btn" href="/librarian/dashboard"><i class="fa-solid fa-arrow-left"></i> Dashboard</a></div><div class="welcome"><div class="welcome-title"><span class="home-icon"><i class="fa-solid fa-user-plus"></i></span><span>Add a new library member</span></div><span class="today">Librarian Workspace</span></div></header>
       <div class="dashboard-content"><div class="member-layout">
         <form id="memberForm" class="member-form-card" novalidate>
-          <h1 class="section-title">Member details</h1><p class="section-copy">Required fields are marked *. A Card ID and temporary password are generated automatically.</p>
+          <h1 class="section-title">Member details</h1><p class="section-copy">Required fields are marked *. A Card ID and password are generated automatically.</p>
           <div class="member-form-grid">
             <div class="member-field"><label for="firstName">First name *</label><input id="firstName" type="text"><p class="field-error">Enter a first name.</p></div>
             <div class="member-field"><label for="lastName">Last name *</label><input id="lastName" type="text"><p class="field-error">Enter a last name.</p></div>
             <div class="member-field"><label for="email">Email *</label><input id="email" type="email"><p class="field-error">Enter a valid email.</p></div>
             <div class="member-field"><label for="phone">Phone number *</label><input id="phone" type="tel" inputmode="numeric" maxlength="10"><p class="field-error">Enter a valid 10-digit number.</p></div>
             <div class="member-field"><label for="dateOfBirth">Date of birth *</label><input id="dateOfBirth" type="date"><p class="field-error">Choose a date of birth.</p></div>
+            <div class="member-field"><label for="memberPassword">Password (auto-generated)</label><input id="memberPassword" type="text" readonly autocomplete="off" aria-describedby="passwordHelp"><p id="passwordHelp" class="section-copy">First four characters of the first name, followed by the birth year.</p></div>
             <div class="member-field"><label for="department">Department *</label><input id="department" type="text" placeholder="e.g. BCA"><p class="field-error">Enter a department.</p></div>
             <div class="member-field"><label for="rollId">Roll / Employee ID *</label><input id="rollId" type="text"><p class="field-error">Enter a roll or employee ID.</p></div>
             <div class="member-field"><label for="validTill">Membership valid till</label><input id="validTill" type="date"></div>

@@ -17,7 +17,7 @@
 
   function validate() {
     return [
-      setValid(fields.firstName, fields.firstName.value.trim().length >= 2),
+      setValid(fields.firstName, fields.firstName.value.trim().length >= 1),
       setValid(fields.lastName, fields.lastName.value.trim().length >= 1),
       setValid(fields.email, /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.value.trim())),
       setValid(fields.phone, /^\d{10}$/.test(fields.phone.value.trim())),
@@ -32,6 +32,12 @@
     : 'â€”';
 
   function updatePreview() {
+    const firstName = fields.firstName.value.trim().split(/\s+/)[0];
+    const dob = fields.dateOfBirth.value;
+    const parsedDate = new Date(`${dob}T00:00:00.000Z`);
+    const validDob = /^\d{4}-\d{2}-\d{2}$/.test(dob) && Number.isFinite(parsedDate.getTime()) && parsedDate.toISOString().slice(0, 10) === dob;
+    document.getElementById('memberPassword').value = firstName && validDob
+      ? Array.from(firstName).slice(0, 4).join('') + dob.slice(0, 4) : '';
     const name = `${fields.firstName.value.trim()} ${fields.lastName.value.trim()}`.trim();
     document.getElementById('previewName').textContent = name || 'New Member';
     document.getElementById('previewType').textContent = 'Student';
@@ -79,7 +85,7 @@
       const result = await LibraryAPI.read(response);
       if (!response.ok) throw new Error(result.message || 'Unable to add member.');
       document.getElementById('previewCard').textContent = result.member.card_no;
-      message.textContent = `Member added. Card ID: ${result.member.card_no}. Default password: first four characters of the first name (same capitalization), followed by birth year. The member must change it on first login after approval.`;
+      message.textContent = `Member added. Card ID: ${result.member.card_no}. Default password: first four characters of the first name (same capitalization), followed by birth year. After approval, the member can sign in with this password to access their dashboard.`;
       message.classList.add('success');
     } catch (error) {
       message.textContent = error.message || 'Unable to add member. Please try again.';

@@ -12,9 +12,6 @@ export const verifyToken = (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        if (decoded.mustChangePassword && !(req.method === 'POST' && req.originalUrl?.split('?')[0] === '/api/auth/change-password')) {
-            return res.status(403).json({ message: 'Change your default password before continuing.', mustChangePassword: true });
-        }
         req.user = decoded;
         next();
     } catch (err) {
@@ -38,7 +35,7 @@ export const optionalMemberAuth = (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        if (!decoded.mustChangePassword && (decoded.role === 'member' || decoded.role === 'user')) req.user = decoded;
+        if (decoded.role === 'member' || decoded.role === 'user') req.user = decoded;
     } catch (err) {
         // Public book browsing remains available when a stale token is supplied.
     }

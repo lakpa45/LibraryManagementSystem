@@ -83,7 +83,7 @@ npm run migrate:password-reset
 node scripts/migrate-member-first-login.js
 ```
 
-Migration `009` is required for the librarian-created member password workflow. Its new flag defaults to `false`, leaving existing members' passwords unchanged. Migration `008` is also used by password-change operations even though public password recovery is disabled.
+Migration `009` added a legacy first-login flag that is no longer used. Existing members' passwords remain unchanged. Migration `008` is also used by password-change operations even though public password recovery is disabled.
 
 There is no bundled administrator seed command or default administrator login. The first administrator must be provisioned in the `admins` table with a bcrypt password hash. Administrators can then create librarian accounts through the application.
 
@@ -114,7 +114,7 @@ When a **librarian** uses Add Member, the server generates the initial password 
 
 The server hashes this password using bcrypt. The librarian creation response does not return the plaintext password, and the form explains the password pattern.
 
-After approval, the member signs in using their email, initial password, and the **Member** role. They are directed to `/change_password.html`, and their initial session cannot access protected member APIs. They must choose a different password of at least eight characters and at most 72 UTF-8 bytes, then sign in again.
+The Add Member form automatically previews this password as the first name and date of birth change. After approval, the member signs in using their email, generated password, and the **Member** role and goes directly to their dashboard. No first-login password change is required. Members can still change their password through their account settings.
 
 This rule applies only to new accounts created through the authenticated librarian endpoint. It does not reset existing passwords or alter public self-registration.
 
@@ -161,7 +161,7 @@ server.js          Application entry point
 | `npm start` | Start the server with Node.js |
 | `npm run build` | Generate the minified Tailwind stylesheet |
 | `npm run css` | Watch and rebuild Tailwind styles |
-| `node --test tests/member_default_password.test.js` | Check default passwords and the first-login flow using a simulated database |
+| `node --test tests/member_default_password.test.js` | Check default passwords and direct dashboard access using a simulated database |
 | `npm run test:audit` | Run the system integration audit; requires `AUDIT_DATABASE_URL` |
 | `npm run test:password-reset` | Run password recovery tests, including optional database checks |
 | `npm run test:password-reset:browser` | Run the standalone password recovery browser checks |
@@ -178,7 +178,7 @@ Password recovery database tests use `RESET_TEST_DATABASE_URL`. These tests cove
 
 ## Current limitations
 
-- Public forgot-password and reset-password routes are disabled. Signed-in password changes and the mandatory first-login password change are available.
+- Public forgot-password and reset-password routes are disabled. Signed-in password changes are available.
 - Book covers and PDFs are stored under `public/images/books/` and `public/pdfs/books/`. A hosted installation needs persistent storage to retain uploads across redeployments. Files are limited to 35 MB each.
 - The legacy fine/payment page does not provide a persistent payment backend.
 - Some UI resources use external CDNs, and the free-book catalogue depends on an external service.

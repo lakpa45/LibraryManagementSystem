@@ -92,7 +92,6 @@ export const signup = async (req, res) => {
         );
 
         const newMember = insertResult.rows[0];
-        if (librarianCreated) await client.query('UPDATE member SET must_change_password = TRUE WHERE member_id = $1', [newMember.member_id]);
         await client.query('COMMIT');
 
         res.status(201).json({

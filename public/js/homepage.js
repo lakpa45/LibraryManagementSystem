@@ -383,7 +383,7 @@ function initAuth() {
                 localStorage.setItem(loginOption.tokenKey, result.token);
                 closeModal();
                 if (role === 'member') renderAuthState();
-                window.location.href = result.mustChangePassword ? '/change_password.html' : loginOption.redirect;
+                window.location.href = loginOption.redirect;
             } else if (response.status === 401) {
                 loginError.textContent = 'The email or password is incorrect, or the selected role does not match this account.';
             } else if (response.status >= 500) {
