@@ -2,6 +2,22 @@
   const form = document.getElementById('memberForm');
   const submitButton = document.getElementById('submitMember');
   const message = document.getElementById('formMessage');
+  const passwordPanel = document.getElementById('temporaryPasswordPanel');
+  const passwordOutput = document.getElementById('temporaryPassword');
+  const copyStatus = document.getElementById('copyPasswordStatus');
+  function clearPassword() {
+    passwordPanel.hidden = true;
+    passwordOutput.textContent = '';
+    copyStatus.textContent = '';
+  }
+  document.getElementById('copyTemporaryPassword').addEventListener('click', async () => {
+    if (!passwordOutput.textContent) return;
+    try {
+      await navigator.clipboard.writeText(passwordOutput.textContent);
+      copyStatus.textContent = 'Password copied.';
+    } catch { copyStatus.textContent = 'Unable to copy automatically. Select and copy the password manually.'; }
+  });
+  window.addEventListener('pagehide', clearPassword);
   const fields = {
     firstName: document.getElementById('firstName'), lastName: document.getElementById('lastName'),
     email: document.getElementById('email'), phone: document.getElementById('phone'),
@@ -32,12 +48,6 @@
     : 'â€”';
 
   function updatePreview() {
-    const firstName = fields.firstName.value.trim().split(/\s+/)[0];
-    const dob = fields.dateOfBirth.value;
-    const parsedDate = new Date(`${dob}T00:00:00.000Z`);
-    const validDob = /^\d{4}-\d{2}-\d{2}$/.test(dob) && Number.isFinite(parsedDate.getTime()) && parsedDate.toISOString().slice(0, 10) === dob;
-    document.getElementById('memberPassword').value = firstName && validDob
-      ? Array.from(firstName).slice(0, 4).join('') + dob.slice(0, 4) : '';
     const name = `${fields.firstName.value.trim()} ${fields.lastName.value.trim()}`.trim();
     document.getElementById('previewName').textContent = name || 'New Member';
     document.getElementById('previewType').textContent = 'Student';
@@ -46,11 +56,13 @@
   }
 
   Object.values(fields).forEach((field) => field.addEventListener('input', () => {
+    clearPassword();
     field.closest('.member-field').classList.remove('invalid');
     updatePreview();
   }));
 
   form.addEventListener('reset', () => window.setTimeout(() => {
+    clearPassword();
     document.querySelectorAll('.member-field.invalid').forEach((field) => field.classList.remove('invalid'));
     document.getElementById('previewCard').textContent = 'Generated after saving';
     message.textContent = '';
@@ -61,6 +73,7 @@
   form.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (submitButton.disabled) return;
+    clearPassword();
     message.textContent = '';
     message.className = 'form-message';
     if (!validate()) {
@@ -85,7 +98,9 @@
       const result = await LibraryAPI.read(response);
       if (!response.ok) throw new Error(result.message || 'Unable to add member.');
       document.getElementById('previewCard').textContent = result.member.card_no;
-      message.textContent = `Member added. Card ID: ${result.member.card_no}. Default password: first four characters of the first name (same capitalization), followed by birth year. After approval, the member can sign in with this password to access their dashboard.`;
+      passwordOutput.textContent = result.temp_password;
+      passwordPanel.hidden = false;
+      message.textContent = `Member added. Card ID: ${result.member.card_no}. After approval, the member can sign in with the temporary password.`;
       message.classList.add('success');
     } catch (error) {
       message.textContent = error.message || 'Unable to add member. Please try again.';

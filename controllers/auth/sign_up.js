@@ -27,6 +27,8 @@ async function generateCardNo(client, memberType) {
 export const signup = async (req, res) => {
     let client;
     try {
+        const librarianCreated = req.user?.role === 'librarian';
+        let generatedPassword;
         // Public sign-up creates member accounts only. Never derive this from req.body.
         const accountRole = 'member';
         const memberStatus = 'Pending';
@@ -54,7 +56,7 @@ export const signup = async (req, res) => {
         if (!['Student', 'Faculty', 'Staff'].includes(member_type)) {
             return res.status(400).json({ message: 'Please select a valid member role.' });
         }
-        if (password && (typeof password !== 'string' || password.length < 8 || Buffer.byteLength(password, 'utf8') > 72)) {
+        if (!librarianCreated && password && (typeof password !== 'string' || password.length < 8 || Buffer.byteLength(password, 'utf8') > 72)) {
             return res.status(400).json({ message: 'Password must be at least 8 characters and at most 72 bytes.' });
         }
 
@@ -62,6 +64,10 @@ export const signup = async (req, res) => {
             return res.status(400).json({ message: 'Please check the dates and member details.' });
         }
 
+        if (librarianCreated) {
+            try { generatedPassword = memberDefaultPassword(first_name, dob); }
+            catch { return res.status(400).json({ message: 'First name must contain letters A-Z and date of birth must be a valid date with a four-digit year.' }); }
+        }
         client = await pool.connect();
         await client.query('BEGIN');
 
@@ -75,12 +81,7 @@ export const signup = async (req, res) => {
             return res.status(409).json({ message: 'Email already registered' });
         }
 
-        const librarianCreated = req.user?.role === 'librarian';
-        if (librarianCreated && !validDate(dob)) {
-            await client.query('ROLLBACK');
-            return res.status(400).json({ message: 'First name and a valid date of birth are required.' });
-        }
-        const finalPassword = librarianCreated ? memberDefaultPassword(first_name, dob) : password || generateTempPassword();
+        const finalPassword = librarianCreated ? generatedPassword : password || generateTempPassword();
         const hashedPassword = await bcrypt.hash(finalPassword, 10);
         const cardNo = await generateCardNo(client, member_type);
 
@@ -94,10 +95,11 @@ export const signup = async (req, res) => {
         const newMember = insertResult.rows[0];
         await client.query('COMMIT');
 
+        if (librarianCreated) res.set('Cache-Control', 'no-store');
         res.status(201).json({
             message: 'Sign up successful',
             member: newMember,
-            temp_password: librarianCreated || password ? undefined : finalPassword
+            temp_password: librarianCreated ? finalPassword : password ? undefined : finalPassword
         });
     } catch (err) {
         if (client) await client.query('ROLLBACK').catch(() => {});

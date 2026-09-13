@@ -104,17 +104,17 @@ Members who register themselves choose their own password. New accounts start as
 
 When a **librarian** uses Add Member, the server generates the initial password from:
 
-1. The first four characters of the trimmed first name, preserving capitalization. A shorter first name is used in full.
+1. The first four characters of the trimmed first name, converted to lowercase after removing characters outside A?Z. A shorter first name is used in full.
 2. The four-digit birth year from a validated date of birth.
 
 | First name | Date of birth | Initial password |
 | --- | --- | --- |
-| `Lakpa` | `2002-05-18` | `Lakp2002` |
-| `Li` | `2000-02-29` | `Li2000` |
+| `Lakpa` | `2002-05-18` | `lakp2002` |
+| `Li` | `2000-02-29` | `li2000` |
 
-The server hashes this password using bcrypt. The librarian creation response does not return the plaintext password, and the form explains the password pattern.
+The server hashes this password using bcrypt. The authenticated librarian creation response returns the temporary password once, with caching disabled. The success panel provides a copy button; it clears when the form changes or the page is left. The password is not stored in browser storage or server logs.
 
-The Add Member form automatically previews this password as the first name and date of birth change. After approval, the member signs in using their email, generated password, and the **Member** role and goes directly to their dashboard. No first-login password change is required. Members can still change their password through their account settings.
+The Add Member form has no password input; generation happens on the backend after validating the first name and date of birth. After approval, the member signs in using their email, generated password, and the **Member** role and goes directly to their dashboard. No first-login password change is required. Member password changes are temporarily disabled. Access displays: ?Password change is temporarily unavailable. Please contact the librarian if you need assistance.? The existing controller and database structure are preserved.
 
 This rule applies only to new accounts created through the authenticated librarian endpoint. It does not reset existing passwords or alter public self-registration.
 
@@ -178,7 +178,7 @@ Password recovery database tests use `RESET_TEST_DATABASE_URL`. These tests cove
 
 ## Current limitations
 
-- Public forgot-password and reset-password routes are disabled. Signed-in password changes are available.
+- Public forgot-password and reset-password routes are disabled. Member password changes are also temporarily disabled; staff password changes remain available.
 - Book covers and PDFs are stored under `public/images/books/` and `public/pdfs/books/`. A hosted installation needs persistent storage to retain uploads across redeployments. Files are limited to 35 MB each.
 - The legacy fine/payment page does not provide a persistent payment backend.
 - Some UI resources use external CDNs, and the free-book catalogue depends on an external service.

@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import { passwordChangeUnavailable } from './middleware/member_password_change_pause.js';
 import express from 'express';
 import path from 'path';
 import cookieParser from 'cookie-parser';
@@ -36,6 +37,7 @@ app.use(cookieParser());
 // Keep legacy stylesheet URLs on the same generated Tailwind build.
 app.get('/favicon.ico', (req, res) => res.sendFile(path.join(__dirname, 'public', 'images', 'placeholder-book.svg')));
 app.get('/css/output.css', (req, res) => res.sendFile(path.join(__dirname, 'public', 'output.css')));
+app.get(['/change_password.html', '/change-password'], (req, res) => res.set('Cache-Control', 'no-store').status(403).type('text').send(passwordChangeUnavailable));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use((req, res, next) => {
     const directProtectedView = /^\/(?:admin|librarian)\/.*\.html$/i.test(req.path);

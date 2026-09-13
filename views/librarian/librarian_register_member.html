@@ -18,7 +18,7 @@
       <div class="sidebar-brand"><span class="brand-grid" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span><span>APNA</span></div>
       <p class="quick-label">Librarian Workspace</p>
       <nav class="side-nav" aria-label="Librarian navigation"><a href="/librarian/dashboard"><i class="fa-solid fa-chart-column"></i> Dashboard</a><a href="/librarian/book-categories"><i class="fa-solid fa-book"></i> Books</a><a href="/librarian/borrow-return"><i class="fa-solid fa-arrow-right-arrow-left"></i> Borrow / Return</a><a href="/librarian/members"><i class="fa-solid fa-users"></i> Members</a><a href="/librarian/pending-members"><i class="fa-solid fa-user-clock"></i> Pending Members</a><a href="/librarian/register-member" class="active"><i class="fa-solid fa-user-plus"></i> Add Member</a><a href="/"><i class="fa-solid fa-house"></i> Main Website</a></nav>
-      <div class="sidebar-footer">Librarian Workspace<br>APNA Library · 2026</div>
+      <div class="sidebar-footer">Librarian Workspace<br>APNA Library Â· 2026</div>
     </aside>
     <button type="button" class="sidebar-overlay" id="sidebarOverlay" aria-label="Close navigation"></button>
     <main class="main-area">
@@ -32,16 +32,20 @@
             <div class="member-field"><label for="email">Email *</label><input id="email" type="email"><p class="field-error">Enter a valid email.</p></div>
             <div class="member-field"><label for="phone">Phone number *</label><input id="phone" type="tel" inputmode="numeric" maxlength="10"><p class="field-error">Enter a valid 10-digit number.</p></div>
             <div class="member-field"><label for="dateOfBirth">Date of birth *</label><input id="dateOfBirth" type="date"><p class="field-error">Choose a date of birth.</p></div>
-            <div class="member-field"><label for="memberPassword">Password (auto-generated)</label><input id="memberPassword" type="text" readonly autocomplete="off" aria-describedby="passwordHelp"><p id="passwordHelp" class="section-copy">First four characters of the first name, followed by the birth year.</p></div>
             <div class="member-field"><label for="department">Department *</label><input id="department" type="text" placeholder="e.g. BCA"><p class="field-error">Enter a department.</p></div>
             <div class="member-field"><label for="rollId">Roll / Employee ID *</label><input id="rollId" type="text"><p class="field-error">Enter a roll or employee ID.</p></div>
             <div class="member-field"><label for="validTill">Membership valid till</label><input id="validTill" type="date"></div>
             <div class="member-field member-field--full"><label for="address">Address</label><textarea id="address" rows="3"></textarea></div>
           </div>
+          <div id="temporaryPasswordPanel" hidden role="status">
+            <p>Member temporary password: <code id="temporaryPassword"></code> <button id="copyTemporaryPassword" type="button">Copy password</button></p>
+            <p>Copy this password now and give it to the member. It is shown only after registration and is not saved in this browser.</p>
+            <p id="copyPasswordStatus" aria-live="polite"></p>
+          </div>
           <p id="formMessage" class="form-message" role="status" aria-live="polite"></p>
           <div class="form-actions"><button class="clear-button" type="reset">Clear</button><button class="submit-button" id="submitMember" type="submit"><i class="fa-solid fa-user-plus"></i> Add Member</button></div>
         </form>
-        <aside class="member-preview-card"><p class="section-copy">Library card preview</p><div class="library-card"><small>APNA Library Member</small><h2 id="previewName">New Member</h2><div class="card-details"><div>Card ID<span id="previewCard">Generated after saving</span></div><div>Type<span id="previewType">—</span></div><div>Department<span id="previewDepartment">—</span></div><div>Valid till<span id="previewExpiry">—</span></div></div></div></aside>
+        <aside class="member-preview-card"><p class="section-copy">Library card preview</p><div class="library-card"><small>APNA Library Member</small><h2 id="previewName">New Member</h2><div class="card-details"><div>Card ID<span id="previewCard">Generated after saving</span></div><div>Type<span id="previewType">â€”</span></div><div>Department<span id="previewDepartment">â€”</span></div><div>Valid till<span id="previewExpiry">â€”</span></div></div></div></aside>
       </div></div>
     </main>
   </div>

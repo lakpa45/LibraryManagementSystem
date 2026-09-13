@@ -1,4 +1,5 @@
 import express from 'express';
+import { pauseMemberPasswordChange } from '../middleware/member_password_change_pause.js';
 import { signup } from '../controllers/auth/sign_up.js';
 import { signin } from '../controllers/auth/sign_in.js';
 import { librarianSignin } from '../controllers/auth/librarian_signin.js';
@@ -23,7 +24,7 @@ router.post('/librarian/signin', librarianSignin);
 router.post('/librarian-staff/signin', librarianStaffSignin);
 // Temporarily disabled: router.post('/forgot-password', createResetRateLimit(pool, 'forgot'), forgotPassword);
 // Temporarily disabled: router.post('/reset-password', createResetRateLimit(pool, 'reset'), resetPassword);
-router.post('/change-password', verifyToken, changePassword);
+router.post('/change-password', verifyToken, pauseMemberPasswordChange, changePassword);
 router.post('/logout', (req, res) => {
     const options = { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax' };
     res.clearCookie('userSession', options);

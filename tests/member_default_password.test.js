@@ -13,13 +13,14 @@ const { signin } = await import('../controllers/auth/sign_in.js');
 const { changePassword } = await import('../controllers/auth/change_password_controller.js');
 const { requireMemberPage } = await import('../middleware/member_page_guard.js');
 const { verifyToken, optionalMemberAuth } = await import('../middleware/auth.js');
-const response = () => ({ code: 200, status(code) { this.code=code; return this; }, json(body) { this.body=body; return this; }, cookie() {} });
+const response = () => ({ code: 200, status(code) { this.code=code; return this; }, json(body) { this.body=body; return this; }, cookie() {}, set() { return this; } });
 
-test('default password preserves case, trims names and validates dates', () => {
-  assert.equal(memberDefaultPassword('  Lakpa Sherpa  ', '2002-05-18'), 'Lakp2002');
-  assert.equal(memberDefaultPassword('Li', '2000-02-29'), 'Li2000');
-  assert.equal(memberDefaultPassword('aLiCe', '1999-01-01'), 'aLiC1999');
-  for (const [name,dob] of [['','2002-05-18'],['Lakpa',''],['Lakpa','2001-02-29'],['Lakpa','invalid']]) assert.throws(() => memberDefaultPassword(name,dob));
+test('default password uses lowercase letters, trims names and validates dates', () => {
+  assert.equal(memberDefaultPassword('  Lakpa Sherpa  ', '2002-05-18'), 'lakp2002');
+  assert.equal(memberDefaultPassword('Li', '2000-02-29'), 'li2000');
+  assert.equal(memberDefaultPassword('aLiCe', '1999-01-01'), 'alic1999');
+  assert.equal(memberDefaultPassword(" L@a-k!pa " , '2002-05-10'), 'lakp2002');
+  for (const [name,dob] of [['','2002-05-18'],['Lakpa',''],['Lakpa','2001-02-29'],['Lakpa','invalid'],['123!','2002-05-10'],['Lakpa','0000-01-01'],['Lakpa','02-05-10']]) assert.throws(() => memberDefaultPassword(name,dob));
 });
 
 test('librarian creation hashes default; login allows direct dashboard access', async () => {
@@ -40,43 +41,73 @@ test('librarian creation hashes default; login allows direct dashboard access', 
     const body={first_name:'Lakpa',last_name:'Sherpa',email:'member@example.test',phone:'9876543210',dob:'2002-05-18'};
     const invalid=response(); await signup({user:{role:'librarian'},body:{...body,dob:''}},invalid);assert.equal(invalid.code,400);
     const created=response(); await signup({user:{role:'librarian'},body},created);
-    assert.equal(created.code,201);assert.equal(created.body.temp_password,undefined);assert.ok(await bcrypt.compare('Lakp2002',storedHash));assert.equal(required,false);
-    const login=response();await signin({body:{email:body.email,password:'Lakp2002'}},login);
+    assert.equal(created.code,201);assert.equal(created.body.temp_password,'lakp2002');assert.ok(await bcrypt.compare('lakp2002',storedHash));assert.equal(required,false);
+    const login=response();await signin({body:{email:body.email,password:'lakp2002'}},login);
     assert.equal(login.body.mustChangePassword,undefined);
     const req={headers:{authorization:'Bearer '+login.body.token},method:'GET',originalUrl:'/api/members/me'};
     let apiAllowed=false;verifyToken(req,response(),()=>{apiAllowed=true;});assert.equal(apiAllowed,true);
     let pageAllowed=false;requireMemberPage({cookies:{userSession:login.body.token}},response(),()=>{pageAllowed=true;});assert.equal(pageAllowed,true);
     const optional={...req};optionalMemberAuth(optional,response(),()=>{});assert.equal(optional.user.id,1);
     const allowed={...req,method:'POST',originalUrl:'/api/auth/change-password'};let passed=false;verifyToken(allowed,response(),()=>{passed=true;});assert.equal(passed,true);
-    const same=response();await changePassword({user:allowed.user,body:{currentPassword:'Lakp2002',newPassword:'Lakp2002'}},same);assert.equal(same.code,400);assert.equal(required,false);
+    const same=response();await changePassword({user:allowed.user,body:{currentPassword:'lakp2002',newPassword:'lakp2002'}},same);assert.equal(same.code,400);assert.equal(required,false);
     const wrong=response();await changePassword({user:allowed.user,body:{currentPassword:'wrong',newPassword:'NewPassword123!'}},wrong);assert.equal(wrong.code,400);assert.equal(required,false);
-    const changed=response();await changePassword({user:allowed.user,body:{currentPassword:'Lakp2002',newPassword:'NewPassword123!'}},changed);assert.equal(changed.code,200);assert.equal(required,false);
-    const old=response();await signin({body:{email:body.email,password:'Lakp2002'}},old);assert.equal(old.code,401);
+    const changed=response();await changePassword({user:allowed.user,body:{currentPassword:'lakp2002',newPassword:'NewPassword123!'}},changed);assert.equal(changed.code,200);assert.equal(required,false);
+    const old=response();await signin({body:{email:body.email,password:'lakp2002'}},old);assert.equal(old.code,401);
     const fresh=response();await signin({body:{email:body.email,password:'NewPassword123!'}},fresh);assert.equal(fresh.body.mustChangePassword,undefined);
     assert.equal(jwt.verify(fresh.body.token,process.env.JWT_SECRET).mustChangePassword,undefined);
-    const short=response();await signup({user:{role:'librarian'},body:{...body,first_name:'L'}},short);assert.equal(short.code,201);assert.ok(await bcrypt.compare('L2002',storedHash));
+    const short=response();await signup({user:{role:'librarian'},body:{...body,first_name:'L'}},short);assert.equal(short.code,201);assert.ok(await bcrypt.compare('l2002',storedHash));
+    for (const [first_name,dob,expected] of [['Li','2000-02-29','li2000'],[' L@a-k!pa ','2002-05-10','lakp2002'],['L','1999-12-31','l1999']]) {
+      const registered=response();await signup({user:{role:'librarian'},body:{...body,first_name,dob}},registered);
+      assert.equal(registered.code,201);assert.equal(registered.body.temp_password,expected);
+      const signedIn=response();await signin({body:{email:body.email,password:expected}},signedIn);assert.equal(signedIn.code,200);assert.ok(signedIn.body.token);
+    }
     const publicSignup=response();await signup({body:{...body,password:'PublicPassword123!'}},publicSignup);assert.equal(publicSignup.code,201);assert.equal(required,false);assert.ok(await bcrypt.compare('PublicPassword123!',storedHash));
   } finally {pool.connect=originalConnect;pool.query=originalQuery;}
 });
 
 
-test('form preview updates with names and dates and clears on reset', async () => {
+test('registration shows backend password, supports copy, and clears it', async () => {
   const elements=new Map();
   const element=(id)=>{
-    if (!elements.has(id)) elements.set(id,{value:'',textContent:'',handlers:{},classList:{remove(){},toggle(){}},closest(){return this;},addEventListener(type,handler){this.handlers[type]=handler;}});
+    if (!elements.has(id)) elements.set(id,{value:'',textContent:'',handlers:{},classList:{remove(){},toggle(){},add(){}},closest(){return this;},addEventListener(type,handler){this.handlers[type]=handler;}});
     return elements.get(id);
   };
-  const timers=[];
+  const timers=[], windowHandlers={};let copied, submitted;
   vm.runInNewContext(await fs.readFile(new URL('../public/js/librarian_register_member.js',import.meta.url),'utf8'), {
-    document:{getElementById:element,querySelectorAll:()=>[]}, window:{setTimeout:fn=>timers.push(fn)}
+    document:{getElementById:element,querySelectorAll:()=>[]},
+    window:{setTimeout:fn=>timers.push(fn),addEventListener:(type,fn)=>windowHandlers[type]=fn},
+    navigator:{clipboard:{writeText:async value=>{copied=value;}}},
+    LibraryAPI:{staffFetch:async(url,options)=>{submitted=JSON.parse(options.body);return {ok:true};},read:async()=>({member:{card_no:'STU-2026-0001'},temp_password:'lakp2002'})}
   });
-  const update=(name,date)=>{element('firstName').value=name;element('dateOfBirth').value=date;element('firstName').handlers.input();return element('memberPassword').value;};
-  assert.equal(update('  Lakpa   Sherpa  ','2002-05-18'),'Lakp2002');
-  assert.equal(update('Li','2000-02-29'),'Li2000');
-  assert.equal(update('L','2000-02-29'),'L2000');
-  assert.equal(update('aLiCe','1999-01-01'),'aLiC1999');
-  assert.equal(update('Lakpa','2001-02-29'),'');
-  assert.equal(update('','2002-05-18'),'');
-  update('Lakpa','2002-05-18');element('dateOfBirth').value='2003-05-18';element('dateOfBirth').handlers.input();assert.equal(element('memberPassword').value,'Lakp2003');
-  element('memberForm').handlers.reset();element('firstName').value='';element('dateOfBirth').value='';timers.forEach(fn=>fn());assert.equal(element('memberPassword').value,'');
+  for (const [id,value] of Object.entries({firstName:'Lakpa',lastName:'Sherpa',dateOfBirth:'2002-05-10',email:'member@example.test',phone:'9876543210',department:'BCA',rollId:'123'})) element(id).value=value;
+  assert.equal(element('temporaryPassword').textContent,'');
+  await element('memberForm').handlers.submit({preventDefault(){}});
+  assert.equal(submitted.password,undefined);
+  assert.equal(element('temporaryPassword').textContent,'lakp2002');
+  assert.equal(element('temporaryPasswordPanel').hidden,false);
+  await element('copyTemporaryPassword').handlers.click();assert.equal(copied,'lakp2002');
+  windowHandlers.pagehide();assert.equal(element('temporaryPassword').textContent,'');assert.equal(element('temporaryPasswordPanel').hidden,true);
+});
+
+test('temporary password change gate blocks members but preserves staff access', async () => {
+  const {pauseMemberPasswordChange,passwordChangeUnavailable}=await import('../middleware/member_password_change_pause.js');
+  for (const role of ['member','user']) {
+    const res=response();pauseMemberPasswordChange({user:{role}},res,()=>assert.fail('member passed gate'));
+    assert.equal(res.code,403);assert.equal(res.body.message,passwordChangeUnavailable);
+  }
+  for (const role of ['admin','librarian']) {let passed=false;pauseMemberPasswordChange({user:{role}},response(),()=>passed=true);assert.equal(passed,true);}
+});
+
+test('duplicate email and database uniqueness conflicts do not expose passwords', async () => {
+  const original=pool.connect;
+  try {
+    for (const conflict of [false,true]) {
+      pool.connect=async()=>({release(){},query:async sql=>{
+        if(sql.includes('SELECT member_id')) {if(conflict) throw Object.assign(new Error('duplicate'),{code:'23505',constraint:'member_email_lower_unique'});return {rows:[{member_id:1}]};}
+        return {rows:[]};
+      }});
+      const res=response();await signup({user:{role:'librarian'},body:{first_name:'Lakpa',last_name:'Sherpa',email:'MEMBER@example.test',phone:'9876543210',dob:'2002-05-10'}},res);
+      assert.equal(res.code,409);assert.equal(res.body.temp_password,undefined);
+    }
+  } finally {pool.connect=original;}
 });

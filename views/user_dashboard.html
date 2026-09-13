@@ -190,7 +190,8 @@
       <label class="account__field account__field--wide">Database member ID <input id="profileMemberId" type="text" disabled></label>
       <div class="account__actions">
         <button type="submit" class="btn btn--accent">Save changes</button>
-        <button type="button" class="btn btn--ghost">Change password</button>
+        <button type="button" class="btn btn--ghost" aria-disabled="true" aria-describedby="passwordChangeNotice">Change password (unavailable)</button>
+        <p id="passwordChangeNotice" role="status">Password change is temporarily unavailable. Please contact the librarian if you need assistance.</p>
       </div>
     </form>
   </div>
