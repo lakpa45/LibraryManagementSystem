@@ -4,6 +4,18 @@ import pool from '../../db/connection.js';
 
 export const signin = async (req, res) => {
     try {
+        const staffSession = req.cookies?.adminSession;
+        if (staffSession) {
+            try {
+                const staff = jwt.verify(staffSession, process.env.JWT_SECRET);
+                if (staff.role === 'admin' || staff.role === 'librarian') {
+                    return res.status(409).json({ message: 'Please sign out of the admin or librarian account before signing in as a member.' });
+                }
+            } catch {
+                res.clearCookie('adminSession');
+            }
+        }
+
         if (typeof req.body?.email !== 'string' || typeof req.body?.password !== 'string' || !req.body.password || Buffer.byteLength(req.body.password, 'utf8') > 72) {
             return res.status(400).json({ message: 'A valid email and password are required.' });
         }
