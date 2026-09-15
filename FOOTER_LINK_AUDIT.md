@@ -14,10 +14,10 @@ The existing footer layouts, colors, typography and content are retained. Footer
 | Digital Library | `/e-books` |
 | Borrowing Policy | `/frequently_asked_question.html#borrowing` |
 | FAQ | `/frequently_asked_question.html` |
-| Contact Librarian | `mailto:library@apna.edu` |
-| Contact | `mailto:library@apna.edu` |
-| library@apna.edu | `mailto:library@apna.edu` |
-| +91-123-1234 | `tel:+911231234` |
+| Contact Librarian | `mailto:apnalibrary2026@gmail.com` |
+| Contact | `mailto:apnalibrary2026@gmail.com` |
+| apnalibrary2026@gmail.com | `mailto:apnalibrary2026@gmail.com` |
+| 9366375318 | `tel:9366375318` |
 | Library Rules | Link removed; label retained as plain text to preserve layout (no rules page exists). |
 | Members (legacy footers) | Removed; there is no public member-directory page. |
 

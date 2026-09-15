@@ -15,7 +15,7 @@ try {
  for(const footer of html.match(/<footer\b[\s\S]*?<\/footer>/gi)||[])for(const a of footer.matchAll(/<a\b([^>]*?)href="([^"]*)"([^>]*)>/g)){
  const href=a[2];count++;assert.notEqual(href,'#',f);assert.match(href,/^(\/|mailto:|tel:|https?:)/,f);
  if(href.startsWith('mailto:')){assert.match(href,/^mailto:[^@\s]+@[^@\s]+\.[^@\s]+$/);continue;}
- if(href.startsWith('tel:')){assert.match(href,/^tel:\+\d+$/);continue;}
+ if(href.startsWith('tel:')){assert.equal(href,'tel:9366375318',f);continue;}
  if(/^https?:/.test(href)){assert.match(a[0],/target="_blank"/);assert.match(a[0],/rel="noopener noreferrer"/);continue;}
  const url=new URL(href,base);let body=checked.get(url.pathname+url.search);if(!body){const r=await fetch(url);assert.equal(r.status,200,href);body=await r.text();assert(!body.includes('Cannot GET'));const file=expected[url.pathname]||url.pathname.slice(1);assert.equal(body,fs.readFileSync('views/'+file,'utf8'),href);checked.set(url.pathname+url.search,body);}
  if(url.hash)assert(body.includes('id="'+url.hash.slice(1)+'"'),href);

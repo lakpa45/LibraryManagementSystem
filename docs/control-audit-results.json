@@ -5,14 +5,14 @@
       "links": [
         {
           "href": "/#contact",
-          "label": "+91-123-1234",
+          "label": "9366375318",
           "visible": true,
           "target": "",
           "rel": ""
         },
         {
           "href": "/#contact",
-          "label": "contact@gmail.com",
+          "label": "apnalibrary2026@gmail.com",
           "visible": true,
           "target": "",
           "rel": ""
@@ -151,22 +151,22 @@
           "rel": ""
         },
         {
-          "href": "mailto:library@apna.edu",
+          "href": "mailto:apnalibrary2026@gmail.com",
           "label": "Contact Librarian",
           "visible": true,
           "target": "",
           "rel": ""
         },
         {
-          "href": "tel:+911231234",
-          "label": "+91-123-1234",
+          "href": "tel:9366375318",
+          "label": "9366375318",
           "visible": true,
           "target": "",
           "rel": ""
         },
         {
-          "href": "mailto:library@apna.edu",
-          "label": "library@apna.edu",
+          "href": "mailto:apnalibrary2026@gmail.com",
+          "label": "apnalibrary2026@gmail.com",
           "visible": true,
           "target": "",
           "rel": ""
