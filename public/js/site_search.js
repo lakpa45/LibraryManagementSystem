@@ -112,6 +112,5 @@ function attachFallbackBookSearch(input) {
 
 document.addEventListener('DOMContentLoaded', () => {
     attachBookSearch('navbarSearchInput', 'navbarSearchDropdown');
-    attachBookSearch('heroSearchInput', 'heroSearchDropdown');
     document.querySelectorAll('form.search input[type="search"]').forEach(attachFallbackBookSearch);
 });

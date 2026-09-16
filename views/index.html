@@ -27,7 +27,7 @@
 
     <link rel="stylesheet" href="/css/footer_links.css">
 </head>
-<body>
+<body class="homepage">
     <!-- header -->
     <header class="header">
         <input type="checkbox" id="menu-btn" class="menu-btn">
@@ -97,9 +97,9 @@
                     </ul>
                 </nav>
                 <div class="navbar__actions">
-                    <form action="#products" class="search" id="navbarSearchForm" autocomplete="off">
+                    <form action="/books" method="get" role="search" class="search" id="navbarSearchForm" autocomplete="off">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <input type="search" id="navbarSearchInput" placeholder="Search Library" aria-label="Search">
+                        <input type="search" id="navbarSearchInput" name="q" placeholder="Search Library" aria-label="Search">
                         <div class="search-dropdown" id="navbarSearchDropdown"></div>
                     </form>
 
@@ -153,10 +153,6 @@
                     <span class="hero__accent">Learn</span>
                 </h1>
                 <p>Discover a world of knowledge, stories, and ideas. Explore our collection and find the perfect book for your next journey.</p>
-                <form action="#products" class="hero__search" id="heroSearchForm" autocomplete="off">
-                    <input type="text" id="heroSearchInput" placeholder="Find your books" aria-label="find your books">
-                    <div class="search-dropdown" id="heroSearchDropdown"></div>
-                </form>
                 <div class="hero__meta">
                     <div class="hero__stat">
                         <span class="count" data-target="500">0</span>
