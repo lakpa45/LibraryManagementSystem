@@ -44,7 +44,6 @@
                 <a href="/librarian/members"${active('members')}><i class="fa-solid fa-users"></i> Members</a>
                 <a href="/librarian/pending-members"${active('pending-members')}><i class="fa-solid fa-user-clock"></i> Pending Members</a>
                 <a href="/librarian/register-member"${active('register-member')}><i class="fa-regular fa-address-card"></i> Register Member</a>
-                <a href="/e-books"><i class="fa-solid fa-book-open-reader"></i> Digital Library</a>
                 <a href="/overdue&fine.html"><i class="fa-regular fa-calendar-xmark"></i> Overdue &amp; Fines</a>
                 <a href="/"><i class="fa-solid fa-house"></i> Main Website</a>
                 <a href="/" id="shellLogout"><i class="fa-solid fa-arrow-right-from-bracket"></i> Logout</a>

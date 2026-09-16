@@ -88,7 +88,8 @@ try {
       }
       if(route!=='/librarian/dashboard') await check(`document.body.classList.contains('librarian-page')`);
       await check(`document.querySelectorAll('.side-nav a.active').length===1 && document.querySelector('.side-nav a.active').getAttribute('href').includes(${JSON.stringify(section==='books'?'book-categories':section)})`);
-      await check(`document.querySelectorAll('.side-nav a').length===10 && document.querySelector('.sidebar-brand').textContent.includes('APNA')`);
+      await check(`document.querySelectorAll('.side-nav a').length===9 && document.querySelector('.sidebar-brand').textContent.includes('APNA')`);
+      await check(`!document.querySelector('.side-nav a[href="/e-books"]') && !document.querySelector('.side-nav .fa-book-open-reader')`);
       await check(`!document.querySelector('.brand-grid') && document.querySelector('.sidebar-brand').children.length===1 && document.querySelector('.sidebar-brand').textContent.trim()==='APNA'`);
       await check(`document.querySelector('.top-header .profile') && document.querySelector('.top-header .header-page-name') && document.querySelector('.top-header .header-label').textContent.trim()==='Librarian'`);
       await check(`getComputedStyle(document.querySelector('.top-header')).display==='flex' && getComputedStyle(document.querySelector('.top-header')).justifyContent==='space-between' && getComputedStyle(document.querySelector('.top-header')).alignItems==='center'`);
