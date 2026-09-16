@@ -5,6 +5,7 @@
   const passwordPanel = document.getElementById('temporaryPasswordPanel');
   const passwordOutput = document.getElementById('temporaryPassword');
   const copyStatus = document.getElementById('copyPasswordStatus');
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   function clearPassword() {
     passwordPanel.hidden = true;
     passwordOutput.textContent = '';
@@ -28,6 +29,7 @@
 
   const setValid = (field, valid) => {
     field.closest('.member-field').classList.toggle('invalid', !valid);
+    if (field === fields.email) field.setAttribute('aria-invalid', String(!valid));
     return valid;
   };
 
@@ -35,7 +37,7 @@
     return [
       setValid(fields.firstName, fields.firstName.value.trim().length >= 1),
       setValid(fields.lastName, fields.lastName.value.trim().length >= 1),
-      setValid(fields.email, /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(fields.email.value.trim())),
+      setValid(fields.email, emailPattern.test(fields.email.value)),
       setValid(fields.phone, /^\d{10}$/.test(fields.phone.value.trim())),
       setValid(fields.dateOfBirth, Boolean(fields.dateOfBirth.value)),
       setValid(fields.department, fields.department.value.trim().length >= 2),
@@ -57,7 +59,11 @@
 
   Object.values(fields).forEach((field) => field.addEventListener('input', () => {
     clearPassword();
-    field.closest('.member-field').classList.remove('invalid');
+    if (field === fields.email) {
+      if (emailPattern.test(field.value.trim().toLowerCase())) setValid(field, true);
+    } else {
+      field.closest('.member-field').classList.remove('invalid');
+    }
     updatePreview();
   }));
 
@@ -76,6 +82,7 @@
     clearPassword();
     message.textContent = '';
     message.className = 'form-message';
+    fields.email.value = fields.email.value.trim().toLowerCase();
     if (!validate()) {
       message.textContent = 'Please correct the highlighted fields.';
       message.classList.add('error');

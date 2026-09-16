@@ -5,6 +5,12 @@ import jwt from 'jsonwebtoken';
 import fs from 'node:fs/promises';
 import vm from 'node:vm';
 import { memberDefaultPassword } from '../utils/member_default_password.js';
+import {
+  DUPLICATE_EMAIL_MESSAGE,
+  INVALID_EMAIL_MESSAGE,
+  isValidEmail,
+  normalizeEmail
+} from '../utils/email_validation.js';
 process.env.DATABASE_URL ||= 'postgres://localhost/test';
 process.env.JWT_SECRET = 'test-only-secret';
 const { default: pool } = await import('../db/connection.js');
@@ -21,6 +27,18 @@ test('default password uses lowercase letters, trims names and validates dates',
   assert.equal(memberDefaultPassword('aLiCe', '1999-01-01'), 'alic1999');
   assert.equal(memberDefaultPassword(" L@a-k!pa " , '2002-05-10'), 'lakp2002');
   for (const [name,dob] of [['','2002-05-18'],['Lakpa',''],['Lakpa','2001-02-29'],['Lakpa','invalid'],['123!','2002-05-10'],['Lakpa','0000-01-01'],['Lakpa','02-05-10']]) assert.throws(() => memberDefaultPassword(name,dob));
+});
+
+test('member registration email validation accepts and rejects required examples', async () => {
+  for (const email of ['lakpa@example.com', 'student@college.edu.in']) assert.equal(isValidEmail(email), true, email);
+  for (const email of ['missing-at-sign.com', 'name@', '@example.com', 'name@example', 'name example@gmail.com', '']) {
+    assert.equal(isValidEmail(email), false, email || 'empty input');
+    const res=response();
+    await signup({body:{first_name:'Lakpa',last_name:'Sherpa',email,phone:'9876543210',password:'PublicPassword123!'}},res);
+    assert.equal(res.code,400,email || 'empty input');
+    assert.equal(res.body.message,INVALID_EMAIL_MESSAGE);
+  }
+  assert.equal(normalizeEmail('  Student@College.EDU.IN  '),'student@college.edu.in');
 });
 
 test('librarian creation hashes default; login allows direct dashboard access', async () => {
@@ -69,7 +87,7 @@ test('librarian creation hashes default; login allows direct dashboard access', 
 test('registration shows backend password, supports copy, and clears it', async () => {
   const elements=new Map();
   const element=(id)=>{
-    if (!elements.has(id)) elements.set(id,{value:'',textContent:'',handlers:{},classList:{remove(){},toggle(){},add(){}},closest(){return this;},addEventListener(type,handler){this.handlers[type]=handler;}});
+    if (!elements.has(id)) elements.set(id,{value:'',textContent:'',handlers:{},attributes:{},classList:{remove(){},toggle(){},add(){}},closest(){return this;},setAttribute(name,value){this.attributes[name]=value;},addEventListener(type,handler){this.handlers[type]=handler;}});
     return elements.get(id);
   };
   const timers=[], windowHandlers={};let copied, submitted;
@@ -79,10 +97,11 @@ test('registration shows backend password, supports copy, and clears it', async 
     navigator:{clipboard:{writeText:async value=>{copied=value;}}},
     LibraryAPI:{staffFetch:async(url,options)=>{submitted=JSON.parse(options.body);return {ok:true};},read:async()=>({member:{card_no:'STU-2026-0001'},temp_password:'lakp2002'})}
   });
-  for (const [id,value] of Object.entries({firstName:'Lakpa',lastName:'Sherpa',dateOfBirth:'2002-05-10',email:'member@example.test',phone:'9876543210',department:'BCA',rollId:'123'})) element(id).value=value;
+  for (const [id,value] of Object.entries({firstName:'Lakpa',lastName:'Sherpa',dateOfBirth:'2002-05-10',email:'  MEMBER@Example.Test  ',phone:'9876543210',department:'BCA',rollId:'123'})) element(id).value=value;
   assert.equal(element('temporaryPassword').textContent,'');
   await element('memberForm').handlers.submit({preventDefault(){}});
   assert.equal(submitted.password,undefined);
+  assert.equal(submitted.email,'member@example.test');
   assert.equal(element('temporaryPassword').textContent,'lakp2002');
   assert.equal(element('temporaryPasswordPanel').hidden,false);
   await element('copyTemporaryPassword').handlers.click();assert.equal(copied,'lakp2002');
@@ -107,7 +126,7 @@ test('duplicate email and database uniqueness conflicts do not expose passwords'
         return {rows:[]};
       }});
       const res=response();await signup({user:{role:'librarian'},body:{first_name:'Lakpa',last_name:'Sherpa',email:'MEMBER@example.test',phone:'9876543210',dob:'2002-05-10'}},res);
-      assert.equal(res.code,409);assert.equal(res.body.temp_password,undefined);
+      assert.equal(res.code,409);assert.equal(res.body.message,DUPLICATE_EMAIL_MESSAGE);assert.equal(res.body.temp_password,undefined);
     }
   } finally {pool.connect=original;}
 });

@@ -1,6 +1,12 @@
 import { memberDefaultPassword } from '../../utils/member_default_password.js';
 import { randomBytes } from 'node:crypto';
 import { validDate } from '../../utils/date_validation.js';
+import {
+    DUPLICATE_EMAIL_MESSAGE,
+    INVALID_EMAIL_MESSAGE,
+    isValidEmail,
+    normalizeEmail
+} from '../../utils/email_validation.js';
 import bcrypt from 'bcrypt';
 import pool from '../../db/connection.js';
 
@@ -39,7 +45,7 @@ export const signup = async (req, res) => {
 
         first_name = typeof first_name === 'string' ? first_name.trim() : '';
         last_name = typeof last_name === 'string' ? last_name.trim() : '';
-        email = typeof email === 'string' ? email.trim().toLowerCase() : '';
+        email = normalizeEmail(email);
         phone = typeof phone === 'string' ? phone.replace(/\D/g, '') : '';
         department = typeof department === 'string' ? department.trim() : '';
         member_type = member_type || 'Student';
@@ -47,8 +53,8 @@ export const signup = async (req, res) => {
         if (first_name.length < 1 || last_name.length < 1 || first_name.length > 100 || last_name.length > 100) {
             return res.status(400).json({ message: 'First and last name are required.' });
         }
-        if (email.length > 100 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            return res.status(400).json({ message: 'A valid email address is required.' });
+        if (!isValidEmail(email)) {
+            return res.status(400).json({ message: INVALID_EMAIL_MESSAGE });
         }
         if (!/^\d{10}$/.test(phone)) {
             return res.status(400).json({ message: 'Phone number must contain exactly 10 digits.' });
@@ -78,7 +84,7 @@ export const signup = async (req, res) => {
 
         if (existingResult.rows.length > 0) {
             await client.query('ROLLBACK');
-            return res.status(409).json({ message: 'Email already registered' });
+            return res.status(409).json({ message: DUPLICATE_EMAIL_MESSAGE });
         }
 
         const finalPassword = librarianCreated ? generatedPassword : password || generateTempPassword();
@@ -104,7 +110,7 @@ export const signup = async (req, res) => {
     } catch (err) {
         if (client) await client.query('ROLLBACK').catch(() => {});
         if (err.code === '23505' && (err.constraint === 'member_email_key' || err.constraint === 'member_email_lower_unique')) {
-            return res.status(409).json({ message: 'Email already registered' });
+            return res.status(409).json({ message: DUPLICATE_EMAIL_MESSAGE });
         }
         console.error('Member registration failed');
         res.status(500).json({ message: 'Server error' });

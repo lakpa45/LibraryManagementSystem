@@ -1,6 +1,4 @@
--- Run with the old app stopped, before starting the updated app.
--- Inspected schema: reset_id integer PK, email/token varchar NOT NULL,
--- expires_at/created_at timestamp without time zone (database timezone UTC), used boolean.
+
 BEGIN;
 LOCK TABLE password_reset IN ACCESS EXCLUSIVE MODE;
 ALTER TABLE password_reset ADD COLUMN IF NOT EXISTS token_hash varchar(64);
