@@ -27,33 +27,56 @@ export const getActiveLoans = async (req, res) => {
 // SEARCH members
 export const searchMembers = async (req, res) => {
     try {
-        const q = String(req.query.q || '').trim();
-        if (!q) return res.status(400).json({ valid: false, message: 'Enter a Card ID or username.' });
+        const q = String(req.query.q || '').trim().replace(/\s+/g, ' ');
+        if (!q) return res.status(400).json({ valid: false, message: 'Enter a member name, Card ID, or Roll ID.' });
+        const partial = `%${q}%`;
 
         const result = await pool.query(
-            `SELECT m.member_id, m.first_name, m.last_name, m.email AS username,
-                    m.card_no AS unique_id, m.status,
+            `SELECT m.member_id, m.first_name, m.last_name,
+                    m.card_no AS unique_id, m.roll_id, m.member_type,
+                    m.department, m.status, m.valid_till,
                     COUNT(i.issue_id)::int AS active_borrowings
              FROM member m
              LEFT JOIN issue i ON i.member_id = m.member_id AND i.return_date IS NULL
-             WHERE LOWER(m.card_no) = LOWER($1) OR LOWER(m.email) = LOWER($1)
+             WHERE LOWER(COALESCE(m.card_no, '')) = LOWER($1)
+                OR LOWER(COALESCE(m.roll_id, '')) = LOWER($1)
+                OR LOWER(m.email) = LOWER($1)
+                OR m.first_name ILIKE $2
+                OR m.last_name ILIKE $2
+                OR CONCAT_WS(' ', m.first_name, m.last_name) ILIKE $2
              GROUP BY m.member_id
-             LIMIT 1`,
-            [q]
+             ORDER BY
+                CASE
+                    WHEN LOWER(COALESCE(m.card_no, '')) = LOWER($1) THEN 0
+                    WHEN LOWER(COALESCE(m.roll_id, '')) = LOWER($1) THEN 1
+                    WHEN LOWER(m.email) = LOWER($1) THEN 2
+                    WHEN LOWER(CONCAT_WS(' ', m.first_name, m.last_name)) = LOWER($1) THEN 3
+                    ELSE 4
+                END,
+                m.first_name, m.last_name, m.member_id
+             LIMIT 20`,
+            [q, partial]
         );
-        if (!result.rows.length) return res.status(404).json({ valid: false, message: 'Member not found.' });
+        if (!result.rows.length) {
+            return res.status(404).json({ valid: false, message: 'No member found with that name or Card ID.' });
+        }
 
-        const member = result.rows[0];
+        const members = result.rows.map(member => ({
+            member_id: member.member_id,
+            unique_id: member.unique_id,
+            roll_id: member.roll_id,
+            display_name: `${member.first_name} ${member.last_name}`.trim(),
+            member_type: member.member_type,
+            department: member.department,
+            status: member.status,
+            valid_till: member.valid_till,
+            active_borrowings: member.active_borrowings
+        }));
         res.status(200).json({
             valid: true,
-            member: {
-                member_id: member.member_id,
-                username: member.username,
-                unique_id: member.unique_id,
-                display_name: `${member.first_name} ${member.last_name}`.trim(),
-                status: member.status,
-                active_borrowings: member.active_borrowings
-            }
+            count: members.length,
+            members,
+            member: members.length === 1 ? members[0] : null
         });
     } catch (err) {
         console.error(err);
@@ -132,7 +155,7 @@ export const issueBook = async (req, res) => {
         await client.query('BEGIN');
 
         const memberResult = await client.query(
-            `SELECT member_id, status FROM member WHERE member_id = $1 FOR SHARE`, [memberId]
+            `SELECT member_id, status, valid_till FROM member WHERE member_id = $1 FOR SHARE`, [memberId]
         );
         if (!memberResult.rows.length) {
             await client.query('ROLLBACK');
@@ -141,6 +164,10 @@ export const issueBook = async (req, res) => {
         if (String(memberResult.rows[0].status).toLowerCase() !== 'approved') {
             await client.query('ROLLBACK');
             return res.status(409).json({ message: 'Only approved members may borrow books.' });
+        }
+        if (memberResult.rows[0].valid_till && String(memberResult.rows[0].valid_till).slice(0, 10) < issueDate) {
+            await client.query('ROLLBACK');
+            return res.status(409).json({ message: 'This member account has expired and cannot borrow books.' });
         }
 
         // Serialize this member/book pair so concurrent requests cannot both pass

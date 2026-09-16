@@ -9,7 +9,7 @@ const root = process.cwd();
 const calls = [];
 const screenshotDir = path.join(os.tmpdir(),'librarian-pages-screenshots');
 fs.mkdirSync(screenshotDir,{recursive:true});
-const members = [{member_id:1,first_name:'Lakpa',last_name:'Sherpa',email:'lakpa@example.com',phone:'9876543210',member_type:'Student',department:'BCA',card_no:'STU-2026-0001',roll_id:'12',registered_on:'2026-09-01',valid_till:'2027-09-01',dob:'2002-05-18'}];
+const members = [{member_id:1,first_name:'Lakpa',last_name:'Sherpa',email:'lakpa@example.com',phone:'9876543210',member_type:'Student',department:'BCA',card_no:'STU-2026-0001',roll_id:'12',registered_on:'2026-09-01',valid_till:'2027-09-01',dob:'2002-05-18',status:'Approved'}];
 const books = [{book_id:1,title:'Algorithms',description:'A practical introduction.',category_id:1,category_name:'Computer Science',book_type:'physical',total_copies:2,available_copies:2,cover_image:'/images/placeholder-book.svg'}];
 const loans = [{issue_id:1,title:'Algorithms',first_name:'Lakpa',last_name:'Sherpa',issue_date:'2026-09-01',due_date:'2026-09-20',status:'Active',fine_amount:0}];
 const routes = {
@@ -38,6 +38,7 @@ const server = http.createServer(async (req,res) => {
     if (url.pathname === '/api/members') return res.end(JSON.stringify(members));
     if (/^\/api\/members\/1\/(approve|reject)$/.test(url.pathname)) return res.end(JSON.stringify({member:members[0]}));
     if (url.pathname === '/api/loans/active') return res.end(JSON.stringify(loans));
+    if (url.pathname === '/api/loans/members/search') return res.end(JSON.stringify({valid:true,count:1,members:[{member_id:1,display_name:'Lakpa Sherpa',unique_id:'STU-2026-0001',roll_id:'12',member_type:'Student',department:'BCA',status:'Approved',valid_till:'2027-09-01',active_borrowings:1}],member:{member_id:1,display_name:'Lakpa Sherpa',unique_id:'STU-2026-0001',roll_id:'12',member_type:'Student',department:'BCA',status:'Approved',valid_till:'2027-09-01',active_borrowings:1}}));
     if (url.pathname.includes('/active')) return res.end(JSON.stringify(loans));
     return res.end(JSON.stringify([]));
   }

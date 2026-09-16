@@ -88,9 +88,9 @@
       <!-- ISSUE PANEL -->
       <form id="issue-form" class="p-4 sm:p-5 space-y-5" novalidate>
         <div>
-          <label for="i-member-search" class="block text-xs font-medium text-ink-light mb-1.5">Card ID or username *</label>
+          <label for="i-member-search" class="block text-xs font-medium text-ink-light mb-1.5">Member name, Card ID, or Roll ID *</label>
           <div class="relative w-full">
-            <input type="text" id="i-member-search" autocomplete="off" placeholder="Exact Card ID or email username"
+            <input type="text" id="i-member-search" autocomplete="off" placeholder="Search by name, Card ID, or Roll ID"
               class="w-full min-h-11 bg-paper border border-ink/15 rounded-lg pl-3.5 pr-11 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brass/50 focus:border-brass transition">
             <span id="i-member-validation-icon" class="hidden pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 items-center justify-center text-sm" aria-hidden="true"></span>
           </div>
@@ -98,6 +98,7 @@
           <button type="button" id="i-member-find" class="mt-2 min-h-10 inline-flex items-center justify-center px-2 text-xs font-semibold text-forest hover:text-forest-light rounded-md focus:outline-none focus:ring-2 focus:ring-brass/50">Find member</button>
           <p class="field-err-msg text-xs mt-1 hidden" data-err="i-member-search">Find a valid member.</p>
           <p id="i-member-validation-status" class="mt-1 min-h-5 text-xs text-ink-light" aria-live="polite"></p>
+          <div id="i-member-suggest" class="hidden mt-2 overflow-hidden rounded-lg border border-ink/15 bg-white shadow-lg" role="listbox" aria-label="Matching members"></div>
         </div>
         <div id="i-member-detail" class="hidden min-w-0 bg-paper rounded-lg px-4 py-3 text-xs border border-ink/10 break-words"></div>
         <div class="relative">
@@ -132,11 +133,12 @@
       <!-- RETURN PANEL -->
       <section id="return-form" class="p-4 sm:p-5 space-y-4 hidden">
         <div class="relative">
-          <label for="r-member-search" class="block text-xs font-medium text-ink-light mb-1.5">Card ID or username</label>
-          <input type="text" id="r-member-search" autocomplete="off" placeholder="Exact Card ID or email username"
+          <label for="r-member-search" class="block text-xs font-medium text-ink-light mb-1.5">Member name, Card ID, or Roll ID</label>
+          <input type="text" id="r-member-search" autocomplete="off" placeholder="Search by name, Card ID, or Roll ID"
             class="w-full min-h-11 bg-paper border border-ink/15 rounded-lg px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brass/50 focus:border-brass transition">
           <button type="button" id="r-member-find" class="mt-2 min-h-10 w-full sm:w-auto inline-flex items-center justify-center px-3 text-xs font-semibold text-forest hover:text-forest-light rounded-md focus:outline-none focus:ring-2 focus:ring-brass/50">Find borrowed books</button>
           <p class="field-err-msg text-xs mt-1 hidden" data-err="r-member-search">Find a valid member.</p>
+          <div id="r-member-suggest" class="hidden mt-2 overflow-hidden rounded-lg border border-ink/15 bg-white shadow-lg" role="listbox" aria-label="Matching members"></div>
         </div>
         <div id="r-member-detail" class="hidden bg-paper rounded-lg px-4 py-3 text-xs border border-ink/10"></div>
         <div id="member-active-loans" class="space-y-3"></div>
