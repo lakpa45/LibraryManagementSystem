@@ -38,7 +38,11 @@ const server = http.createServer(async (req,res) => {
     if (url.pathname === '/api/members') return res.end(JSON.stringify(members));
     if (/^\/api\/members\/1\/(approve|reject)$/.test(url.pathname)) return res.end(JSON.stringify({member:members[0]}));
     if (url.pathname === '/api/loans/active') return res.end(JSON.stringify(loans));
-    if (url.pathname === '/api/loans/members/search') return res.end(JSON.stringify({valid:true,count:1,members:[{member_id:1,display_name:'Lakpa Sherpa',unique_id:'STU-2026-0001',roll_id:'12',member_type:'Student',department:'BCA',status:'Approved',valid_till:'2027-09-01',active_borrowings:1}],member:{member_id:1,display_name:'Lakpa Sherpa',unique_id:'STU-2026-0001',roll_id:'12',member_type:'Student',department:'BCA',status:'Approved',valid_till:'2027-09-01',active_borrowings:1}}));
+    if (url.pathname === '/api/loans/members/search') {
+      const match = {member_id:1,display_name:'Lakpa Sherpa',unique_id:'STU-2026-0001',roll_id:'12',member_type:'Student',department:'BCA',status:'Approved',valid_till:'2027-09-01',active_borrowings:1};
+      const matches = url.searchParams.get('q') === 'Shared' ? [{...match,display_name:'Shared Name'},{...match,member_id:2,display_name:'Shared Name',unique_id:'STU-2026-0002'}] : [match];
+      return res.end(JSON.stringify({valid:true,count:matches.length,members:matches,member:matches.length===1?matches[0]:null}));
+    }
     if (url.pathname.includes('/active')) return res.end(JSON.stringify(loans));
     return res.end(JSON.stringify([]));
   }
@@ -120,7 +124,13 @@ try {
   await evaluate(`document.querySelector('#topAddBookBtn').click()`); await check(`!document.querySelector('#bookModal').classList.contains('hidden')`);
   await evaluate(`document.querySelector('#cancelModalBtn').click()`); await check(`document.querySelector('#bookModal').classList.contains('hidden')`);
   await go('/librarian/book-categories'); await evaluate(`document.querySelector('#topAddCategoryBtn').click()`); await check(`!document.querySelector('#categoryModal').classList.contains('hidden')`); await evaluate(`document.querySelector('#cancelModalBtn').click()`);
-  await go('/librarian/borrow-return'); await evaluate(`document.querySelector('#tab-return').click()`); await check(`!document.querySelector('#return-form').classList.contains('hidden')`);
+  await go('/librarian/borrow-return');
+  await evaluate(`document.querySelector('#i-member-search').value='Shared';document.querySelector('#i-member-search').dispatchEvent(new Event('input',{bubbles:true}))`);
+  await new Promise(resolve=>setTimeout(resolve,650));
+  await check(`document.querySelectorAll('#i-member-suggest [data-member-index]').length===2 && !document.querySelector('#i-member-suggest').classList.contains('hidden') && document.querySelector('#i-member-id').value===''`);
+  await evaluate(`document.querySelector('#i-member-suggest [data-member-index="1"]').click()`);
+  await check(`document.querySelector('#i-member-id').value==='2' && document.querySelector('#i-member-search').classList.contains('border-green-600')`);
+  await evaluate(`document.querySelector('#tab-return').click()`); await check(`!document.querySelector('#return-form').classList.contains('hidden')`);
   await go('/librarian/members'); await evaluate(`document.querySelector('[data-type="Student"]').click()`); await check(`document.querySelector('[data-type="Student"]').classList.contains('active')`);
   await go('/librarian/pending-members'); await evaluate(`document.querySelector('[data-action="approve"]').click()`); await pause(); assert.ok(calls.some(call=>call.url==='/api/members/1/approve'&&call.method==='PUT'));
   assert.equal(errors.length,0,'No browser JavaScript errors');
