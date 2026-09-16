@@ -7,6 +7,8 @@ import { spawn } from 'node:child_process';
 
 const root = process.cwd();
 const calls = [];
+const screenshotDir = path.join(os.tmpdir(),'librarian-pages-screenshots');
+fs.mkdirSync(screenshotDir,{recursive:true});
 const members = [{member_id:1,first_name:'Lakpa',last_name:'Sherpa',email:'lakpa@example.com',phone:'9876543210',member_type:'Student',department:'BCA',card_no:'STU-2026-0001',roll_id:'12',registered_on:'2026-09-01',valid_till:'2027-09-01',dob:'2002-05-18'}];
 const books = [{book_id:1,title:'Algorithms',description:'A practical introduction.',category_id:1,category_name:'Computer Science',book_type:'physical',total_copies:2,available_copies:2,cover_image:'/images/placeholder-book.svg'}];
 const loans = [{issue_id:1,title:'Algorithms',first_name:'Lakpa',last_name:'Sherpa',issue_date:'2026-09-01',due_date:'2026-09-20',status:'Active',fine_amount:0}];
@@ -70,6 +72,10 @@ try {
     await send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});
     for (const [route,section] of pages) {
       await go(route);
+      if (width === 1440 || width === 375) {
+        const shot = await send('Page.captureScreenshot',{format:'png'});
+        fs.writeFileSync(path.join(screenshotDir,`${route.split('/').pop()}-${width}.png`),Buffer.from(shot.data,'base64'));
+      }
       await check(`document.body.classList.contains('librarian-page')`);
       await check(`document.querySelectorAll('.side-nav a.active').length===1 && document.querySelector('.side-nav a.active').getAttribute('href').includes(${JSON.stringify(section==='books'?'book-categories':section)})`);
       await check(`document.querySelectorAll('.side-nav a').length===10 && document.querySelector('.sidebar-brand').textContent.includes('APNA')`);
@@ -85,8 +91,8 @@ try {
         await check(`!document.querySelector('#sidebar').classList.contains('open')`);
       }
       if(route==='/librarian/books') await check(`getComputedStyle(document.querySelector('.book-cover')).objectFit==='contain' && document.querySelector('#physicalBooksTab') && document.querySelector('#digitalBooksTab')`);
-      if(route==='/librarian/pending-members'&&width<=640) await check(`Array.from(document.querySelectorAll('.pending-action-button')).every(button=>button.getBoundingClientRect().height>=48)`);
-      if(route==='/librarian/borrow-return') await check(`(()=>{const i=document.querySelector('#i-member-validation-icon').getBoundingClientRect(),p=document.querySelector('#i-member-search').getBoundingClientRect();return i.right<=p.right&&i.left>=p.left})()`);
+      if(route==='/librarian/pending-members'&&width<=640) await check(`Array.from(document.querySelectorAll('.pending-action-button')).filter(button=>button.getClientRects().length).every(button=>button.getBoundingClientRect().height>=48)`);
+      if(route==='/librarian/borrow-return') await check(`(()=>{const icon=document.querySelector('#i-member-validation-icon');icon.classList.remove('hidden');icon.classList.add('flex');const i=icon.getBoundingClientRect(),p=document.querySelector('#i-member-search').getBoundingClientRect();return i.right<=p.right&&i.left>=p.left})()`);
       if(route==='/librarian/register-member'&&width<=640) await check(`getComputedStyle(document.querySelector('.member-form-grid')).gridTemplateColumns.split(' ').length===1`);
     }
     console.log(`PASS: librarian workspace layout at ${width}px`);
@@ -96,10 +102,12 @@ try {
   await evaluate(`document.querySelector('#digitalBooksTab').click()`); await check(`document.querySelector('#digitalBooksTab').getAttribute('aria-selected')==='true'`);
   await evaluate(`document.querySelector('#topAddBookBtn').click()`); await check(`!document.querySelector('#bookModal').classList.contains('hidden')`);
   await evaluate(`document.querySelector('#cancelModalBtn').click()`); await check(`document.querySelector('#bookModal').classList.contains('hidden')`);
+  await go('/librarian/book-categories'); await evaluate(`document.querySelector('#topAddCategoryBtn').click()`); await check(`!document.querySelector('#categoryModal').classList.contains('hidden')`); await evaluate(`document.querySelector('#cancelModalBtn').click()`);
   await go('/librarian/borrow-return'); await evaluate(`document.querySelector('#tab-return').click()`); await check(`!document.querySelector('#return-form').classList.contains('hidden')`);
   await go('/librarian/members'); await evaluate(`document.querySelector('[data-type="Student"]').click()`); await check(`document.querySelector('[data-type="Student"]').classList.contains('active')`);
   await go('/librarian/pending-members'); await evaluate(`document.querySelector('[data-action="approve"]').click()`); await pause(); assert.ok(calls.some(call=>call.url==='/api/members/1/approve'&&call.method==='PUT'));
   assert.equal(errors.length,0,'No browser JavaScript errors');
   console.log('PASS: tabs, modals, filters, approval API, responsive shell, and no console errors');
+  console.log(`Screenshots: ${screenshotDir}`);
   await send('Browser.close');
 } finally { ws?.close(); browser.kill(); server.close(); }

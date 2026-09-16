@@ -5,6 +5,23 @@
 
     if (isLibrarianPage && !isDashboard) {
         document.body.classList.add('librarian-page');
+        window.LibrarianUI = window.LibrarianUI || {};
+        window.LibrarianUI.notify = (message, type = 'info') => {
+            let toast = document.getElementById('shellToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'shellToast';
+                toast.className = 'shell-toast';
+                toast.setAttribute('role', 'status');
+                toast.setAttribute('aria-live', 'polite');
+                document.body.appendChild(toast);
+            }
+            toast.dataset.type = type;
+            toast.textContent = message;
+            toast.classList.add('show');
+            window.clearTimeout(window.LibrarianUI.toastTimer);
+            window.LibrarianUI.toastTimer = window.setTimeout(() => toast.classList.remove('show'), 3000);
+        };
         const activeSection = path.includes('borrow-return') ? 'borrow-return'
             : path.includes('pending-members') ? 'pending-members'
                 : path.includes('register-member') ? 'register-member'
@@ -38,6 +55,7 @@
         if (header) {
             const title = header.querySelector('.welcome-title span:last-child')?.textContent?.trim() || 'Librarian Workspace';
             const icon = header.querySelector('.home-icon i')?.className || 'fa-solid fa-book';
+            const headerAction = header.querySelector('.top-search button.action-btn');
             header.className = 'top-header dashboard-header';
             header.innerHTML = `
                 <button type="button" class="mobile-menu" id="mobileMenuBtn" aria-label="Open navigation" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
@@ -45,10 +63,11 @@
                     <button type="button" class="profile-button" id="shellProfileButton" aria-expanded="false"><i class="fa-regular fa-comment-dots"></i><span class="profile-name" id="librarianName">Librarian</span><span class="avatar">L</span></button>
                     <div id="shellProfileMenu" class="profile-menu hidden"><a href="/librarian/dashboard">Dashboard</a><button type="button" id="shellMenuLogout">Logout</button></div>
                 </div>
-                <div class="welcome"><div class="welcome-title"><span class="home-icon"><i class="${icon}"></i></span><span>${title}</span></div><span class="today" id="shellToday"></span></div>`;
+                <div class="welcome"><div class="welcome-title"><span class="home-icon"><i class="${icon}"></i></span><span>${title}</span></div><div class="header-meta"><span class="today" id="shellToday"></span></div></div>`;
             const storedName = localStorage.getItem('adminName');
             if (storedName) document.getElementById('librarianName').textContent = storedName;
             document.getElementById('shellToday').textContent = new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+            if (headerAction) document.querySelector('.header-meta').appendChild(headerAction);
             const profileButton = document.getElementById('shellProfileButton');
             const profileMenu = document.getElementById('shellProfileMenu');
             profileButton.addEventListener('click', () => {

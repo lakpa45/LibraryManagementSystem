@@ -1,5 +1,6 @@
 let categories = [];
 let deleteTargetId = null;
+const notify = (message, type = 'error') => window.LibrarianUI?.notify(message, type) || window.alert(message);
 
 const grid = document.getElementById("categoryGrid");
 const emptyState = document.getElementById("emptyState");
@@ -155,13 +156,14 @@ categoryForm.addEventListener("submit", async event => {
         if (response.ok) {
             closeModal();
             await loadCategories();
+            notify(id ? 'Category updated successfully.' : 'Category added successfully.', 'success');
         } else {
             const result = await LibraryAPI.read(response);
-            alert(result.message || "Something went wrong.");
+            notify(result.message || "Something went wrong.");
         }
     } catch (err) {
         console.error(err);
-        alert("Something went wrong. Please try again.");
+        notify("Something went wrong. Please try again.");
     } finally { submit.disabled = false; }
 });
 
@@ -193,9 +195,10 @@ document.getElementById("confirmDeleteBtn").addEventListener("click", async () =
         if (response.ok) {
             closeDeleteModal();
             await loadCategories();
-        } else { alert((await LibraryAPI.read(response)).message || "Unable to remove this category."); }
+            notify('Category removed successfully.', 'success');
+        } else { notify((await LibraryAPI.read(response)).message || "Unable to remove this category."); }
     } catch (err) {
-        alert("Unable to remove this category. Please try again.");
+        notify("Unable to remove this category. Please try again.");
     } finally { button.disabled = false; }
 });
 

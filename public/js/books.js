@@ -6,6 +6,7 @@ let categories = [];
 let activeBookType = "physical";
 const MAX_UPLOAD_SIZE = 35 * 1024 * 1024;
 const FILE_SIZE_MESSAGE = "File size must not exceed 35 MB.";
+const notify = (message, type = 'error') => window.LibrarianUI?.notify(message, type) || window.alert(message);
 
 const grid = document.getElementById("bookGrid");
 const emptyState = document.getElementById("emptyState");
@@ -224,7 +225,7 @@ coverInput.addEventListener("change", () => {
         selectedFile = null;
         coverPreview.removeAttribute("src");
         coverPreview.classList.add("hidden");
-        alert(FILE_SIZE_MESSAGE);
+        notify(FILE_SIZE_MESSAGE);
         return;
     }
     if (file) {
@@ -241,7 +242,7 @@ pdfInput.addEventListener("change", () => {
         selectedPdf = null;
         pdfFileName.textContent = "";
         pdfFileName.classList.add("hidden");
-        alert(FILE_SIZE_MESSAGE);
+        notify(FILE_SIZE_MESSAGE);
         return;
     }
     selectedPdf = file || null;
@@ -255,7 +256,7 @@ bookForm.addEventListener("submit", async event => {
 
     if ((selectedFile && selectedFile.size > MAX_UPLOAD_SIZE) ||
         (selectedPdf && selectedPdf.size > MAX_UPLOAD_SIZE)) {
-        alert(FILE_SIZE_MESSAGE);
+        notify(FILE_SIZE_MESSAGE);
         return;
     }
 
@@ -296,13 +297,14 @@ bookForm.addEventListener("submit", async event => {
         if (response.ok) {
             closeModal();
             await loadBooks();
+            notify(id ? 'Book updated successfully.' : 'Book added successfully.', 'success');
         } else {
             const result = await LibraryAPI.read(response).catch(() => ({}));
-            alert(result.message || "Something went wrong.");
+            notify(result.message || "Something went wrong.");
         }
     } catch (err) {
         console.error(err);
-        alert("Something went wrong. Please try again.");
+        notify("Something went wrong. Please try again.");
     } finally {
         submitButton.disabled = false;
     }
@@ -337,6 +339,7 @@ document.getElementById("confirmDeleteBtn").addEventListener("click", async () =
         if (response.ok) {
             closeDeleteModal();
             await loadBooks();
+            notify('Book removed successfully.', 'success');
             return;
         }
 
@@ -344,10 +347,10 @@ document.getElementById("confirmDeleteBtn").addEventListener("click", async () =
         const result = contentType.includes("application/json")
             ? await LibraryAPI.read(response)
             : {};
-        alert(result.message || "Unable to remove the book.");
+        notify(result.message || "Unable to remove the book.");
     } catch (err) {
         console.error(err);
-        alert("Unable to remove the book. Please try again.");
+        notify("Unable to remove the book. Please try again.");
     } finally {
         confirmButton.disabled = false;
     }
@@ -361,4 +364,4 @@ document.addEventListener("keydown", event => {
 
 Promise.all([loadBooks(), loadCategories()]).then(() => {
     if (preselectedCategoryId) openModal();
-}).catch(error => alert(error.message));
+}).catch(error => notify(error.message));
