@@ -30,7 +30,7 @@
         const active = (section) => section === activeSection ? ' class="active" aria-current="page"' : '';
         const sidebarNode = document.getElementById('sidebar');
         if (sidebarNode) sidebarNode.innerHTML = `
-            <div class="sidebar-brand"><span class="brand-grid" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span><span>APNA</span></div>
+            <div class="sidebar-brand"><span>APNA</span></div>
             <p class="quick-label">Quick Links</p>
             <div class="quick-icons">
                 <a href="/librarian/borrow-return" title="Borrow and return"><i class="fa-solid fa-arrow-right-arrow-left"></i></a>

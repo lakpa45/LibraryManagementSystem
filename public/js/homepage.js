@@ -205,9 +205,9 @@ function ensurePublicLoginModal() {
                 </label>
                 <label class="auth-field">
                     Password
-                    <span style="position:relative;display:block">
-                        <input type="password" name="password" required placeholder="••••••••" autocomplete="current-password" style="padding-right:2.75rem">
-                        <button type="button" data-password-toggle aria-label="Show password" title="Show password" style="position:absolute;right:.85rem;top:50%;transform:translateY(-50%);border:0;background:transparent;cursor:pointer;color:inherit;padding:.25rem"><i class="fa-regular fa-eye" aria-hidden="true"></i></button>
+                    <span class="auth-password">
+                        <input type="password" name="password" required placeholder="••••••••" autocomplete="current-password">
+                        <button type="button" class="auth-password__toggle" data-password-toggle aria-label="Show password" title="Show password"><i class="fa-regular fa-eye" aria-hidden="true"></i></button>
                     </span>
                 </label>
                 <label class="auth-field">

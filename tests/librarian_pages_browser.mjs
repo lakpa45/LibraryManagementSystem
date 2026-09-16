@@ -13,6 +13,8 @@ const members = [{member_id:1,first_name:'Lakpa',last_name:'Sherpa',email:'lakpa
 const books = [{book_id:1,title:'Algorithms',description:'A practical introduction.',category_id:1,category_name:'Computer Science',book_type:'physical',total_copies:2,available_copies:2,cover_image:'/images/placeholder-book.svg'}];
 const loans = [{issue_id:1,title:'Algorithms',first_name:'Lakpa',last_name:'Sherpa',issue_date:'2026-09-01',due_date:'2026-09-20',status:'Active',fine_amount:0}];
 const routes = {
+  '/admin/dashboard':'views/admin/admin_dashboard.html',
+  '/admin/librarians':'views/admin/admin_librarians.html',
   '/librarian/dashboard':'views/librarian/librarian_dashboard.html',
   '/librarian/book-categories':'views/librarian/librarian_book_category.html',
   '/librarian/books':'views/librarian/librarian_books.html',
@@ -66,8 +68,8 @@ try {
   const evaluate=async expression=>{const result=await send('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(result.exceptionDetails)throw Error(JSON.stringify(result.exceptionDetails));return result.result.value;};
   const pause=()=>new Promise(resolve=>setTimeout(resolve,180));
   await send('Page.enable'); await send('Runtime.enable');
-  const token='x.'+Buffer.from(JSON.stringify({role:'librarian',exp:9999999999})).toString('base64')+'.x';
-  await send('Page.addScriptToEvaluateOnNewDocument',{source:`localStorage.setItem('librarianToken',${JSON.stringify(token)});localStorage.setItem('adminName','Test Librarian')`});
+  const token='x.'+Buffer.from(JSON.stringify({role:'admin',exp:9999999999})).toString('base64')+'.x';
+  await send('Page.addScriptToEvaluateOnNewDocument',{source:`localStorage.setItem('adminToken',${JSON.stringify(token)});localStorage.setItem('adminName','Test Librarian')`});
   const go=async route=>{await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}${route}`});for(let i=0;i<80;i++){if(await evaluate(`document.readyState==='complete'`))break;await pause();}await pause();};
   const check=async expression=>assert.ok(await evaluate(expression),expression);
   const pages=[['/librarian/dashboard','dashboard'],['/librarian/book-categories','books'],['/librarian/books','books'],['/librarian/borrow-return','borrow-return'],['/librarian/members','members'],['/librarian/pending-members','pending-members'],['/librarian/register-member','register-member']];
@@ -82,6 +84,7 @@ try {
       if(route!=='/librarian/dashboard') await check(`document.body.classList.contains('librarian-page')`);
       await check(`document.querySelectorAll('.side-nav a.active').length===1 && document.querySelector('.side-nav a.active').getAttribute('href').includes(${JSON.stringify(section==='books'?'book-categories':section)})`);
       await check(`document.querySelectorAll('.side-nav a').length===10 && document.querySelector('.sidebar-brand').textContent.includes('APNA')`);
+      await check(`!document.querySelector('.brand-grid') && document.querySelector('.sidebar-brand').children.length===1 && document.querySelector('.sidebar-brand').textContent.trim()==='APNA'`);
       await check(`document.querySelector('.top-header .profile') && document.querySelector('.top-header .header-page-name') && document.querySelector('.top-header .header-label').textContent.trim()==='Librarian'`);
       await check(`getComputedStyle(document.querySelector('.top-header')).display==='flex' && getComputedStyle(document.querySelector('.top-header')).justifyContent==='space-between' && getComputedStyle(document.querySelector('.top-header')).alignItems==='center'`);
       await check(`document.querySelectorAll('.top-header .avatar').length===1 && document.querySelector('.header-right .today').compareDocumentPosition(document.querySelector('.header-right .avatar')) & Node.DOCUMENT_POSITION_FOLLOWING`);
@@ -100,6 +103,13 @@ try {
       if(route==='/librarian/pending-members'&&width<=640) await check(`Array.from(document.querySelectorAll('.pending-action-button')).filter(button=>button.getClientRects().length).every(button=>button.getBoundingClientRect().height>=48)`);
       if(route==='/librarian/borrow-return') await check(`(()=>{const icon=document.querySelector('#i-member-validation-icon');icon.classList.remove('hidden');icon.classList.add('flex');const i=icon.getBoundingClientRect(),p=document.querySelector('#i-member-search').getBoundingClientRect();return i.right<=p.right&&i.left>=p.left})()`);
       if(route==='/librarian/register-member'&&width<=640) await check(`getComputedStyle(document.querySelector('.member-form-grid')).gridTemplateColumns.split(' ').length===1`);
+    }
+    for (const route of ['/admin/dashboard','/admin/librarians']) {
+      await go(route);
+      await check(`!document.querySelector('.brand-grid') && document.querySelector('.sidebar-brand').children.length===1 && document.querySelector('.sidebar-brand').textContent.trim()==='APNA'`);
+      await check(`getComputedStyle(document.querySelector('.sidebar-brand')).alignItems==='center' && document.querySelector('.sidebar-brand').getBoundingClientRect().height>=80`);
+      await check(`document.documentElement.scrollWidth<=innerWidth`);
+      if(width<=900){await evaluate(`document.querySelector('#mobileMenuBtn').click()`);await pause();await check(`document.querySelector('#sidebar').classList.contains('open')`);await evaluate(`document.querySelector('#sidebarOverlay').click()`);}
     }
     console.log(`PASS: librarian workspace layout at ${width}px`);
   }

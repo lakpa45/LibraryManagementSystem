@@ -16,9 +16,7 @@
         button, input { font:inherit; }
         .dashboard-shell { width:100%; min-height:100vh; min-height:100dvh; margin:0; display:grid; grid-template-columns:190px minmax(0,1fr); overflow:hidden; border-radius:0; background:var(--canvas); box-shadow:none; }
         .sidebar { background:#1f1f1f; color:#fff; display:flex; flex-direction:column; min-height:100vh; min-height:100dvh; }
-        .sidebar-brand { padding:26px 22px 20px; display:flex; align-items:center; gap:12px; font-size:23px; font-weight:700; }
-        .brand-grid { width:39px; height:39px; display:grid; grid-template-columns:repeat(3,13px); transform:rotate(45deg); }
-        .brand-grid span { background:#fff; border:1px solid rgba(0,0,0,.08); }
+        .sidebar-brand { min-height:85px; padding:26px 22px 20px; display:flex; align-items:center; justify-content:flex-start; font-size:23px; line-height:1; font-weight:700; }
         .quick-label { padding:18px 22px 10px; text-align:center; font-size:12px; color:#ddd; }
         .quick-icons { display:flex; justify-content:center; gap:14px; padding:8px 16px 22px; }
         .quick-icons a { width:39px; height:39px; display:grid; place-items:center; border-radius:50%; background:#2e2e2e; color:#ddd; text-decoration:none; transition:.2s; }
@@ -109,10 +107,7 @@
     <script src="/js/admin_dashboard_guard.js"></script>
     <div class="dashboard-shell">
         <aside class="sidebar" id="sidebar">
-            <div class="sidebar-brand">
-                <span class="brand-grid" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></span>
-                <span>APNA</span>
-            </div>
+            <div class="sidebar-brand"><span>APNA</span></div>
             <p class="quick-label">Quick Links</p>
             <div class="quick-icons">
                 <a href="/librarian/borrow-return" title="Borrow and return"><i class="fa-solid fa-trophy"></i></a>
