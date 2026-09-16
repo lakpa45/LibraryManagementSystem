@@ -1,7 +1,6 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import pool from '../../db/connection.js';
-import { inactiveLibrarianMessage } from '../../middleware/librarian_status.js';
 
 export const librarianStaffSignin = async (req, res) => {
     try {
@@ -27,10 +26,6 @@ export const librarianStaffSignin = async (req, res) => {
         const isMatch = await bcrypt.compare(password, librarian.password);
         if (!isMatch) {
             return res.status(401).json({ message: 'Invalid email or password' });
-        }
-
-        if (librarian.status !== 'active') {
-            return res.status(403).json({ message: inactiveLibrarianMessage });
         }
 
         const token = jwt.sign(

@@ -1,7 +1,6 @@
 import jwt from 'jsonwebtoken';
-import { isActiveLibrarian, inactiveLibrarianMessage } from './librarian_status.js';
 
-export const verifyToken = async (req, res, next) => {
+export const verifyToken = (req, res, next) => {
     const authorization = req.headers.authorization;
     const token = authorization?.startsWith('Bearer ')
         ? authorization.slice(7)
@@ -13,9 +12,6 @@ export const verifyToken = async (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        if (decoded.role === 'librarian' && !await isActiveLibrarian(decoded.id)) {
-            return res.status(403).json({ message: inactiveLibrarianMessage });
-        }
         req.user = decoded;
         next();
     } catch (err) {

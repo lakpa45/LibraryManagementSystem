@@ -5,6 +5,8 @@ const librarianModal = document.getElementById('librarianModal');
 const librarianForm = document.getElementById('librarianForm');
 const librarianMessage = document.getElementById('librarianMessage');
 const saveLibrarianButton = document.getElementById('saveLibrarianButton');
+const librarianNotice = document.getElementById('librarianNotice');
+const removingLibrarians = new Set();
 
 let librarians = [];
 
@@ -31,10 +33,43 @@ function renderLibrarians() {
             <td>${escapeLibrarianHtml(item.name)}</td>
             <td>${escapeLibrarianHtml(item.email)}</td>
             <td>${escapeLibrarianHtml(item.phone || 'Not provided')}</td>
-            <td><span class="status-badge">Active</span></td>
+            <td><button type="button" class="librarian-remove" data-remove-librarian="${item.librarian_id}" aria-label="Remove ${escapeLibrarianHtml(item.name)}" ${removingLibrarians.has(item.librarian_id) ? 'disabled' : ''}>${removingLibrarians.has(item.librarian_id) ? 'Removing...' : 'Remove'}</button></td>
         </tr>
     `).join('');
 }
+
+function showLibrarianNotice(message, error = false) {
+    librarianNotice.textContent = message;
+    librarianNotice.className = `form-message librarian-notice form-message--${error ? 'error' : 'success'}`;
+}
+
+librarianTableBody.addEventListener('click', async (event) => {
+    const button = event.target.closest('[data-remove-librarian]');
+    if (!button) return;
+    const id = Number(button.dataset.removeLibrarian);
+    if (removingLibrarians.has(id)) return;
+    if (!window.confirm('Are you sure you want to remove this librarian?')) return;
+    removingLibrarians.add(id);
+    renderLibrarians();
+    try {
+        const response = await LibraryAPI.staffFetch(`/api/admin/librarians/${id}`, {
+            method: 'DELETE', headers: adminHeaders()
+        });
+        const data = await LibraryAPI.read(response);
+        if (!response.ok) throw new Error(data.message || 'Unable to remove librarian.');
+        librarians = librarians.filter((item) => item.librarian_id !== id);
+        showLibrarianNotice(data.message);
+    } catch (error) {
+        showLibrarianNotice(error.message, true);
+    } finally {
+        removingLibrarians.delete(id);
+        renderLibrarians();
+        // Restore keyboard focus after replacing the affected row.
+        (librarianTableBody.querySelector(`[data-remove-librarian="${id}"]`) ||
+            librarianTableBody.querySelector('[data-remove-librarian]') ||
+            document.getElementById('openLibrarianModal')).focus();
+    }
+});
 
 async function loadLibrarians() {
     librarianTableBody.innerHTML = '<tr><td colspan="4" class="loading-cell">Loading librarians...</td></tr>';

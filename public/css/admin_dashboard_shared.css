@@ -71,3 +71,17 @@ body.librarian-page{background:var(--canvas)!important;background-image:none!imp
 .librarian-page .top-header.dashboard-header{height:auto;min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:20px}.librarian-page .dashboard-header :is(.header-left,.header-right){display:flex;align-items:center}.librarian-page .dashboard-header .header-left{min-width:0;gap:12px}.librarian-page .dashboard-header .header-right{flex:0 0 auto;justify-content:flex-end;gap:16px}.librarian-page .dashboard-header .header-copy{min-width:0;display:flex;flex-direction:column;justify-content:center;line-height:1.25}.librarian-page .dashboard-header .header-label{color:var(--muted);font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase}.librarian-page .dashboard-header .header-page-name{overflow:hidden;color:var(--ink);font-size:15px;font-weight:600;text-overflow:ellipsis;white-space:nowrap}.librarian-page .dashboard-header .profile{margin-left:0}.librarian-page .dashboard-header .profile-button{padding:0}.librarian-page .dashboard-header .header-action-slot{display:flex;align-items:center;margin-left:8px}.librarian-page .dashboard-header .home-icon{flex-shrink:0}
 @media(max-width:900px){.librarian-page .dashboard-header .mobile-menu{display:grid;flex:0 0 44px;place-items:center}.librarian-page .dashboard-header .header-left{flex:1 1 auto}.librarian-page .dashboard-header .header-action-slot{display:none}}
 @media(max-width:640px){.librarian-page .top-header.dashboard-header{min-height:72px;padding:10px;gap:10px}.librarian-page .dashboard-header .header-left{gap:8px}.librarian-page .dashboard-header .header-right{gap:9px}.librarian-page .dashboard-header .today{display:none}.librarian-page .dashboard-header .home-icon{width:34px;height:34px;flex-basis:34px}.librarian-page .dashboard-header .header-page-name{max-width:42vw;font-size:13px}.librarian-page .dashboard-header .avatar{width:38px;height:38px}}
+
+/* Administrator librarian removal controls. */
+.admin-librarians-page .librarian-remove{min-height:44px;padding:10px 16px;border:0;border-radius:6px;background:#b91c1c;color:#fff;font:inherit;font-weight:600;cursor:pointer}
+.admin-librarians-page .librarian-remove:hover{background:#991b1b}
+.admin-librarians-page .librarian-remove:focus-visible{outline:3px solid #1d4ed8;outline-offset:3px}
+.admin-librarians-page .librarian-remove:disabled{opacity:.6;cursor:wait}
+.admin-librarians-page .librarian-notice:not(:empty){margin:12px 16px}
+@media(max-width:640px){
+ .admin-librarians-page .table-wrap table{min-width:0}
+ .admin-librarians-page .table-wrap thead{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
+ .admin-librarians-page .table-wrap tr{display:grid;grid-template-columns:minmax(0,1fr);padding:12px;border-top:1px solid #e5e7eb}
+ .admin-librarians-page .table-wrap td{border:0;padding:5px 0;overflow-wrap:anywhere}
+ .admin-librarians-page .librarian-remove{width:100%}
+}
