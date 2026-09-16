@@ -54,7 +54,7 @@ export const searchMembers = async (req, res) => {
                     ELSE 4
                 END,
                 m.first_name, m.last_name, m.member_id
-             LIMIT 20`,
+             LIMIT 8`,
             [q, partial]
         );
         if (!result.rows.length) {

@@ -106,7 +106,10 @@ try {
       }
       if(route==='/librarian/books') await check(`getComputedStyle(document.querySelector('.book-cover')).objectFit==='contain' && document.querySelector('#physicalBooksTab') && document.querySelector('#digitalBooksTab')`);
       if(route==='/librarian/pending-members'&&width<=640) await check(`Array.from(document.querySelectorAll('.pending-action-button')).filter(button=>button.getClientRects().length).every(button=>button.getBoundingClientRect().height>=48)`);
-      if(route==='/librarian/borrow-return') await check(`(()=>{const icon=document.querySelector('#i-member-validation-icon');icon.classList.remove('hidden');icon.classList.add('flex');const i=icon.getBoundingClientRect(),p=document.querySelector('#i-member-search').getBoundingClientRect();return i.right<=p.right&&i.left>=p.left})()`);
+      if(route==='/librarian/borrow-return') {
+        await check(`(()=>{const icon=document.querySelector('#i-member-validation-icon');icon.classList.remove('hidden');icon.classList.add('flex');const i=icon.getBoundingClientRect(),p=document.querySelector('#i-member-search').getBoundingClientRect();return i.right<=p.right&&i.left>=p.left})()`);
+        if(width===375){await evaluate(`document.querySelector('#i-member-search').value='Shared';document.querySelector('#i-member-search').dispatchEvent(new Event('input',{bubbles:true}))`);await new Promise(resolve=>setTimeout(resolve,650));await check(`(()=>{const input=document.querySelector('#i-member-search').getBoundingClientRect(),menu=document.querySelector('#i-member-suggest').getBoundingClientRect();return Math.abs(input.left-menu.left)<1&&Math.abs(input.width-menu.width)<1&&menu.right<=innerWidth})()`);}
+      }
       if(route==='/librarian/register-member'&&width<=640) await check(`getComputedStyle(document.querySelector('.member-form-grid')).gridTemplateColumns.split(' ').length===1`);
     }
     for (const route of ['/admin/dashboard','/admin/librarians']) {
@@ -126,10 +129,17 @@ try {
   await go('/librarian/book-categories'); await evaluate(`document.querySelector('#topAddCategoryBtn').click()`); await check(`!document.querySelector('#categoryModal').classList.contains('hidden')`); await evaluate(`document.querySelector('#cancelModalBtn').click()`);
   await go('/librarian/borrow-return');
   await evaluate(`document.querySelector('#i-member-search').value='Shared';document.querySelector('#i-member-search').dispatchEvent(new Event('input',{bubbles:true}))`);
+  await check(`document.querySelector('#i-member-search').value==='Shared' && document.querySelector('#i-member-id').value==='' && !document.querySelector('#i-member-search').classList.contains('border-green-600')`);
   await new Promise(resolve=>setTimeout(resolve,650));
-  await check(`document.querySelectorAll('#i-member-suggest [data-member-index]').length===2 && !document.querySelector('#i-member-suggest').classList.contains('hidden') && document.querySelector('#i-member-id').value===''`);
+  await check(`document.querySelectorAll('#i-member-suggest [data-member-index]').length===2 && !document.querySelector('#i-member-suggest').classList.contains('hidden') && document.querySelector('#i-member-search').value==='Shared' && document.querySelector('#i-member-id').value===''`);
   await evaluate(`document.querySelector('#i-member-suggest [data-member-index="1"]').click()`);
-  await check(`document.querySelector('#i-member-id').value==='2' && document.querySelector('#i-member-search').classList.contains('border-green-600')`);
+  await check(`document.querySelector('#i-member-id').value==='2' && document.querySelector('#i-member-search').value==='Shared Name' && document.querySelector('#i-member-search').classList.contains('border-green-600')`);
+  await evaluate(`document.querySelector('#i-member-search').value='Lak';document.querySelector('#i-member-search').dispatchEvent(new Event('input',{bubbles:true}))`);
+  await check(`document.querySelector('#i-member-id').value==='' && !document.querySelector('#i-member-search').classList.contains('border-green-600')`);
+  await new Promise(resolve=>setTimeout(resolve,650));
+  await evaluate(`document.querySelector('#i-member-search').dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));document.querySelector('#i-member-search').dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true}))`);
+  await new Promise(resolve=>setTimeout(resolve,100));
+  await check(`document.querySelector('#i-member-id').value==='1' && document.querySelector('#i-member-search').value==='Lakpa Sherpa' && document.querySelector('#i-member-search').classList.contains('border-green-600')`);
   await evaluate(`document.querySelector('#tab-return').click()`); await check(`!document.querySelector('#return-form').classList.contains('hidden')`);
   await go('/librarian/members'); await evaluate(`document.querySelector('[data-type="Student"]').click()`); await check(`document.querySelector('[data-type="Student"]').classList.contains('active')`);
   await go('/librarian/pending-members'); await evaluate(`document.querySelector('[data-action="approve"]').click()`); await pause(); assert.ok(calls.some(call=>call.url==='/api/members/1/approve'&&call.method==='PUT'));

@@ -62,6 +62,7 @@ test('member lookup supports exact IDs and normalized partial/full names safely'
         assert.match(sql, /first_name ILIKE \$2/i);
         assert.match(sql, /last_name ILIKE \$2/i);
         assert.match(sql, /CONCAT_WS\(' ', m\.first_name, m\.last_name\) ILIKE \$2/i);
+        assert.match(sql, /LIMIT 8/i);
         assert.deepEqual(params, ['Lakpa Sherpa', '%Lakpa Sherpa%']);
         assert.equal(calls.every(call => call.params.length === 2), true);
     } finally {

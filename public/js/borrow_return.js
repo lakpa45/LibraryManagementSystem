@@ -49,26 +49,42 @@ function memberEligibility(member) {
     return '';
 }
 
+const memberMenuState = {
+    borrow: { members: [], activeIndex: -1 },
+    return: { members: [], activeIndex: -1 }
+};
+
+function memberIds(mode) {
+    return mode === 'borrow'
+        ? { input: 'i-member-search', hidden: 'i-member-id', detail: 'i-member-detail', menu: 'i-member-suggest' }
+        : { input: 'r-member-search', hidden: 'r-member-id', detail: 'r-member-detail', menu: 'r-member-suggest' };
+}
+
 function renderMemberChoices(mode, members) {
-    const node = el(mode === 'borrow' ? 'i-member-suggest' : 'r-member-suggest');
-    node.innerHTML = members.map((member, index) => `<button type="button" data-member-index="${index}" class="block w-full border-b border-ink/10 px-3.5 py-3 text-left text-sm last:border-0 hover:bg-paper focus:bg-paper focus:outline-none"><span class="font-semibold">${safe(member.display_name)}</span><span class="ml-2 font-mono text-xs text-ink-light">${safe(member.unique_id || 'No Card ID')}</span><span class="block text-xs text-ink-light">${safe(member.member_type || 'Member')} &middot; ${safe(member.department || 'Department not recorded')}</span></button>`).join('');
-    node._members = members;
+    const { menu } = memberIds(mode);
+    const node = el(menu);
+    memberMenuState[mode] = { members, activeIndex: -1 };
+    node.innerHTML = members.length ? members.map((member, index) => {
+        const eligibilityError = memberEligibility(member);
+        const statusClass = eligibilityError ? 'text-red-600' : 'text-green-700';
+        return `<button type="button" role="option" aria-selected="false" data-member-index="${index}" ${eligibilityError ? 'disabled aria-disabled="true"' : ''} class="block min-h-14 w-full border-b border-ink/10 px-3.5 py-3 text-left text-sm last:border-0 hover:bg-paper focus:bg-paper focus:outline-none disabled:cursor-not-allowed disabled:bg-gray-50 disabled:opacity-75"><span class="font-semibold">${safe(member.display_name)}</span><span class="ml-2 font-mono text-xs text-ink-light">${safe(member.unique_id || 'No Card ID')}</span><span class="block text-xs text-ink-light">${safe(member.member_type || 'Member')}${member.department ? ` &middot; ${safe(member.department)}` : ''}</span><span class="block text-xs font-medium ${statusClass}">${safe(eligibilityError || member.status || 'Approved')}</span></button>`;
+    }).join('') : '<div class="px-3.5 py-3 text-sm text-ink-light">No matching member found</div>';
     node.classList.remove('hidden');
 }
 
 async function selectMember(member, mode) {
-    const inputId = mode === 'borrow' ? 'i-member-search' : 'r-member-search';
-    const detailId = mode === 'borrow' ? 'i-member-detail' : 'r-member-detail';
-    el(inputId).value = member.unique_id || member.display_name;
-    el(mode === 'borrow' ? 'i-member-suggest' : 'r-member-suggest').classList.add('hidden');
+    const { input: inputId, hidden, detail: detailId, menu } = memberIds(mode);
+    const eligibilityError = memberEligibility(member);
+    if (eligibilityError) return;
+    el(inputId).value = member.display_name;
+    el(hidden).value = member.member_id;
+    el(menu).classList.add('hidden');
     errorFor(inputId);
     el(detailId).innerHTML = memberHtml(member);
     el(detailId).classList.remove('hidden');
     if (mode === 'borrow') {
-        const eligibilityError = memberEligibility(member);
-        selectedMember = eligibilityError ? null : member;
-        el('i-member-id').value = eligibilityError ? '' : member.member_id;
-        setMemberValidation(eligibilityError ? 'invalid' : 'valid', eligibilityError || 'Member verified.');
+        selectedMember = member;
+        setMemberValidation('valid', 'Member selected.');
         enableBorrow();
     } else {
         returnMember = member;
@@ -86,23 +102,24 @@ async function findMember(inputId, detailId, mode, requestOptions = {}) {
         if (requestOptions.signal?.aborted || el(inputId).value.trim().replace(/\s+/g, ' ') !== q) return;
         const members = Array.isArray(result.members) ? result.members : (result.member ? [result.member] : []);
         errorFor(inputId);
-        if (members.length > 1) {
-            renderMemberChoices(mode, members);
-            el(detailId).classList.add('hidden');
-            if (mode === 'borrow') {
-                selectedMember = null; el('i-member-id').value = '';
-                setMemberValidation('empty', 'Select the correct member from the matches.'); enableBorrow();
-            } else { returnMember = null; el('member-active-loans').innerHTML = ''; }
-            return;
-        }
-        if (!members.length) throw new Error('No member found with that name or Card ID.');
-        await selectMember(members[0], mode);
+        renderMemberChoices(mode, members);
+        el(detailId).classList.add('hidden');
+        if (mode === 'borrow') {
+            selectedMember = null; el('i-member-id').value = '';
+            setMemberValidation('empty', 'Select a member from the suggestions.'); enableBorrow();
+        } else { returnMember = null; el('r-member-id').value = ''; el('member-active-loans').innerHTML = ''; }
     } catch (err) {
         if (err.name === 'AbortError') return;
-        errorFor(inputId, err.message); el(detailId).classList.add('hidden');
-        el(mode === 'borrow' ? 'i-member-suggest' : 'r-member-suggest').classList.add('hidden');
-        if (mode === 'borrow') { selectedMember = null; el('i-member-id').value = ''; setMemberValidation('invalid', err.message); enableBorrow(); }
-        else { returnMember = null; el('member-active-loans').innerHTML = ''; }
+        el(detailId).classList.add('hidden');
+        if (err.status === 404) {
+            errorFor(inputId);
+            renderMemberChoices(mode, []);
+        } else {
+            errorFor(inputId, err.message);
+            el(memberIds(mode).menu).classList.add('hidden');
+        }
+        if (mode === 'borrow') { selectedMember = null; el('i-member-id').value = ''; setMemberValidation('empty'); enableBorrow(); }
+        else { returnMember = null; el('r-member-id').value = ''; el('member-active-loans').innerHTML = ''; }
     } finally { button.disabled = false; }
 }
 
@@ -174,7 +191,48 @@ function scheduleMemberValidation() {
         return;
     }
     setMemberValidation('checking', 'Checking member…');
-    memberValidationTimer = setTimeout(() => verifyBorrowMember(value, version), 450);
+    memberValidationTimer = setTimeout(() => verifyBorrowMember(value, version), 275);
+}
+
+function moveMemberHighlight(mode, direction) {
+    const { menu } = memberIds(mode);
+    const buttons = [...el(menu).querySelectorAll('[data-member-index]:not(:disabled)')];
+    if (!buttons.length) return;
+    const state = memberMenuState[mode];
+    const currentPosition = buttons.findIndex(button => Number(button.dataset.memberIndex) === state.activeIndex);
+    const nextPosition = currentPosition < 0
+        ? (direction > 0 ? 0 : buttons.length - 1)
+        : (currentPosition + direction + buttons.length) % buttons.length;
+    state.activeIndex = Number(buttons[nextPosition].dataset.memberIndex);
+    buttons.forEach((button, index) => {
+        const active = index === nextPosition;
+        button.setAttribute('aria-selected', String(active));
+        button.classList.toggle('bg-paper', active);
+    });
+    buttons[nextPosition].scrollIntoView({ block: 'nearest' });
+}
+
+function handleMemberKeys(event, mode) {
+    const { menu } = memberIds(mode);
+    const menuNode = el(menu);
+    if (event.key === 'Escape') {
+        menuNode.classList.add('hidden');
+        return;
+    }
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        event.preventDefault();
+        if (!menuNode.classList.contains('hidden')) moveMemberHighlight(mode, event.key === 'ArrowDown' ? 1 : -1);
+        return;
+    }
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        const state = memberMenuState[mode];
+        if (!menuNode.classList.contains('hidden') && state.activeIndex >= 0) {
+            selectMember(state.members[state.activeIndex], mode);
+        } else {
+            findMember(memberIds(mode).input, memberIds(mode).detail, mode);
+        }
+    }
 }
 
 async function loadBooks(q = '') {
@@ -219,23 +277,26 @@ el('i-member-find').onclick = () => {
     verifyBorrowMember(value, memberValidationVersion);
 };
 el('r-member-find').onclick = () => findMember('r-member-search', 'r-member-detail', 'return');
-['i-member-search', 'r-member-search'].forEach((id) => el(id).addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); el(id === 'i-member-search' ? 'i-member-find' : 'r-member-find').click(); } }));
+el('i-member-search').addEventListener('keydown', event => handleMemberKeys(event, 'borrow'));
+el('r-member-search').addEventListener('keydown', event => handleMemberKeys(event, 'return'));
 el('i-member-search').oninput = scheduleMemberValidation;
 let returnMemberTimer;
 el('r-member-search').oninput = () => {
     clearTimeout(returnMemberTimer);
     returnMember = null;
+    el('r-member-id').value = '';
     el('r-member-detail').classList.add('hidden');
     el('r-member-suggest').classList.add('hidden');
     el('member-active-loans').innerHTML = '';
     if (el('r-member-search').value.trim()) {
-        returnMemberTimer = setTimeout(() => findMember('r-member-search', 'r-member-detail', 'return'), 450);
+        returnMemberTimer = setTimeout(() => findMember('r-member-search', 'r-member-detail', 'return'), 275);
     }
 };
 ['i-member-suggest', 'r-member-suggest'].forEach((id) => {
     el(id).onclick = (event) => {
         const button = event.target.closest('[data-member-index]');
-        if (button) selectMember(el(id)._members[Number(button.dataset.memberIndex)], id.startsWith('i-') ? 'borrow' : 'return');
+        const mode = id.startsWith('i-') ? 'borrow' : 'return';
+        if (button && !button.disabled) selectMember(memberMenuState[mode].members[Number(button.dataset.memberIndex)], mode);
     };
 });
 
@@ -243,7 +304,13 @@ let bookTimer;
 el('i-book-search').oninput = () => { el('i-book-id').value = ''; el('i-book-detail').classList.add('hidden'); enableBorrow(); clearTimeout(bookTimer); bookTimer = setTimeout(() => loadBooks(el('i-book-search').value.trim()), 200); };
 el('i-book-search').onfocus = () => loadBooks(el('i-book-search').value.trim());
 el('i-book-suggest').onclick = (e) => { const button = e.target.closest('[data-book]'); if (button) selectBook(books[Number(button.dataset.book)]); };
-document.addEventListener('click', (e) => { if (!el('i-book-suggest').contains(e.target) && e.target !== el('i-book-search')) el('i-book-suggest').classList.add('hidden'); });
+document.addEventListener('click', (event) => {
+    if (!el('i-book-suggest').contains(event.target) && event.target !== el('i-book-search')) el('i-book-suggest').classList.add('hidden');
+    ['borrow', 'return'].forEach(mode => {
+        const { input, menu } = memberIds(mode);
+        if (!el(menu).contains(event.target) && event.target !== el(input)) el(menu).classList.add('hidden');
+    });
+});
 
 el('i-issue-date').value = today(); el('i-issue-date').onchange = updateDue; el('i-period').onchange = updateDue; updateDue();
 el('issue-form').onsubmit = async (e) => {
@@ -253,7 +320,7 @@ el('issue-form').onsubmit = async (e) => {
     try {
         const result = await api('/api/loans/issue', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ member_id: selectedMember.member_id, book_id: Number(el('i-book-id').value), issue_date: issueDate, due_date: localISO(due) }) });
         toast(result.message || 'Book borrowed successfully.', `Due ${dateText(localISO(due))}`); el('i-book-id').value = ''; el('i-book-search').value = ''; el('i-book-detail').classList.add('hidden');
-        const refreshes = [loadBooks(), loadLoans(), findMember('i-member-search', 'i-member-detail', 'borrow')];
+        const refreshes = [loadBooks(), loadLoans()];
         if (returnMember?.member_id === selectedMember.member_id) refreshes.push(loadMemberLoans(selectedMember.member_id));
         await Promise.all(refreshes);
     } catch (err) { console.error('Borrow request failed:', err.message); toast('Borrow failed', err.message, true); } finally { enableBorrow(); }
@@ -261,7 +328,7 @@ el('issue-form').onsubmit = async (e) => {
 
 el('member-active-loans').onclick = async (e) => {
     const button = e.target.closest('[data-return]'); if (!button || !returnMember) return; button.disabled = true;
-    try { await api(`/api/loans/return/${button.dataset.return}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ return_date: today() }) }); toast('Book returned', 'The physical copy is available again.'); await Promise.all([loadMemberLoans(returnMember.member_id), loadBooks(), loadLoans()]); await findMember('r-member-search', 'r-member-detail', 'return'); }
+    try { await api(`/api/loans/return/${button.dataset.return}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ return_date: today() }) }); toast('Book returned', 'The physical copy is available again.'); await Promise.all([loadMemberLoans(returnMember.member_id), loadBooks(), loadLoans()]); }
     catch (err) { button.disabled = false; toast('Return failed', err.message, true); }
 };
 
