@@ -4,7 +4,7 @@ import pool from '../../db/connection.js';
 export const getLibrarians = async (req, res) => {
     try {
         const result = await pool.query(
-            `SELECT librarian_id, name, email, phone
+            `SELECT librarian_id, name, email, phone, status
              FROM librarian
              ORDER BY name ASC, librarian_id ASC`
         );
@@ -45,7 +45,7 @@ export const createLibrarian = async (req, res) => {
         const result = await pool.query(
             `INSERT INTO librarian (name, email, password, phone)
              VALUES ($1, $2, $3, $4)
-             RETURNING librarian_id, name, email, phone`,
+             RETURNING librarian_id, name, email, phone, status`,
             [name, email, hashedPassword, phone || null]
         );
 
@@ -58,3 +58,35 @@ export const createLibrarian = async (req, res) => {
         res.status(500).json({ message: 'Unable to add the librarian.' });
     }
 };
+
+const changeLibrarianStatus = (status) => async (req, res) => {
+    const id = String(req.params.id);
+    if (!/^[1-9]\d*$/.test(id) || Number(id) > 2147483647) {
+        return res.status(404).json({ message: 'Librarian not found.' });
+    }
+    try {
+        // The conditional update makes concurrent/repeated requests safe without
+        // deleting the librarian or modifying their library/issue relationships.
+        const result = await pool.query(
+            `UPDATE librarian SET status = $1
+             WHERE librarian_id = $2 AND status <> $1
+             RETURNING librarian_id, name, email, phone, status`,
+            [status, id]
+        );
+        if (!result.rows.length) {
+            const existing = await pool.query('SELECT librarian_id FROM librarian WHERE librarian_id = $1', [id]);
+            if (!existing.rows.length) return res.status(404).json({ message: 'Librarian not found.' });
+            return res.status(409).json({ message: `Librarian is already ${status}.` });
+        }
+        return res.json({
+            message: `Librarian ${status === 'active' ? 'reactivated' : 'deactivated'} successfully.`,
+            librarian: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Failed to change librarian status:', error);
+        return res.status(500).json({ message: 'Unable to change librarian status. Please try again.' });
+    }
+};
+
+export const deactivateLibrarian = changeLibrarianStatus('inactive');
+export const reactivateLibrarian = changeLibrarianStatus('active');

@@ -60,6 +60,7 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/loans', loanRoutes);
 app.use('/api/members', memberRoutes);
 app.use('/api/librarians', librarianRoutes);
+app.use('/api/admin/librarians', librarianRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 
 // Main route
