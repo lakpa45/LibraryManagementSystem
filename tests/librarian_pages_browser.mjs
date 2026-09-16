@@ -13,6 +13,7 @@ const members = [{member_id:1,first_name:'Lakpa',last_name:'Sherpa',email:'lakpa
 const books = [{book_id:1,title:'Algorithms',description:'A practical introduction.',category_id:1,category_name:'Computer Science',book_type:'physical',total_copies:2,available_copies:2,cover_image:'/images/placeholder-book.svg'}];
 const loans = [{issue_id:1,title:'Algorithms',first_name:'Lakpa',last_name:'Sherpa',issue_date:'2026-09-01',due_date:'2026-09-20',status:'Active',fine_amount:0}];
 const routes = {
+  '/librarian/dashboard':'views/librarian/librarian_dashboard.html',
   '/librarian/book-categories':'views/librarian/librarian_book_category.html',
   '/librarian/books':'views/librarian/librarian_books.html',
   '/librarian/borrow-return':'views/librarian/librarian_borrow_return.html',
@@ -27,6 +28,8 @@ const server = http.createServer(async (req,res) => {
     calls.push({url:url.pathname,method:req.method,body:raw});
     res.setHeader('Content-Type','application/json');
     if (url.pathname === '/api/categories') return res.end(JSON.stringify([{category_id:1,category_name:'Computer Science',description:'Technology titles',color:'#f5b301',book_count:1}]));
+    if (url.pathname === '/api/dashboard/stats') return res.end(JSON.stringify({books:1,borrowers:1,overdue:0}));
+    if (url.pathname === '/api/dashboard/activity' || url.pathname === '/api/dashboard/due-soon') return res.end(JSON.stringify([]));
     if (url.pathname === '/api/books') return res.end(JSON.stringify(books));
     if (url.pathname === '/api/members/pending') return res.end(JSON.stringify(members));
     if (url.pathname === '/api/members/search') return res.end(JSON.stringify(members));
@@ -67,7 +70,7 @@ try {
   await send('Page.addScriptToEvaluateOnNewDocument',{source:`localStorage.setItem('librarianToken',${JSON.stringify(token)});localStorage.setItem('adminName','Test Librarian')`});
   const go=async route=>{await send('Page.navigate',{url:`http://127.0.0.1:${server.address().port}${route}`});for(let i=0;i<80;i++){if(await evaluate(`document.readyState==='complete'`))break;await pause();}await pause();};
   const check=async expression=>assert.ok(await evaluate(expression),expression);
-  const pages=[['/librarian/book-categories','books'],['/librarian/books','books'],['/librarian/borrow-return','borrow-return'],['/librarian/members','members'],['/librarian/pending-members','pending-members'],['/librarian/register-member','register-member']];
+  const pages=[['/librarian/dashboard','dashboard'],['/librarian/book-categories','books'],['/librarian/books','books'],['/librarian/borrow-return','borrow-return'],['/librarian/members','members'],['/librarian/pending-members','pending-members'],['/librarian/register-member','register-member']];
   for (const [width,height] of [[1440,1000],[768,900],[375,812]]) {
     await send('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});
     for (const [route,section] of pages) {
@@ -76,10 +79,13 @@ try {
         const shot = await send('Page.captureScreenshot',{format:'png'});
         fs.writeFileSync(path.join(screenshotDir,`${route.split('/').pop()}-${width}.png`),Buffer.from(shot.data,'base64'));
       }
-      await check(`document.body.classList.contains('librarian-page')`);
+      if(route!=='/librarian/dashboard') await check(`document.body.classList.contains('librarian-page')`);
       await check(`document.querySelectorAll('.side-nav a.active').length===1 && document.querySelector('.side-nav a.active').getAttribute('href').includes(${JSON.stringify(section==='books'?'book-categories':section)})`);
       await check(`document.querySelectorAll('.side-nav a').length===10 && document.querySelector('.sidebar-brand').textContent.includes('APNA')`);
-      await check(`document.querySelector('.top-header .profile') && document.querySelector('.top-header .welcome-title')`);
+      await check(`document.querySelector('.top-header .profile') && document.querySelector('.top-header .header-page-name') && document.querySelector('.top-header .header-label').textContent.trim()==='Librarian'`);
+      await check(`getComputedStyle(document.querySelector('.top-header')).display==='flex' && getComputedStyle(document.querySelector('.top-header')).justifyContent==='space-between' && getComputedStyle(document.querySelector('.top-header')).alignItems==='center'`);
+      await check(`document.querySelectorAll('.top-header .avatar').length===1 && document.querySelector('.header-right .today').compareDocumentPosition(document.querySelector('.header-right .avatar')) & Node.DOCUMENT_POSITION_FOLLOWING`);
+      await check(`(()=>{const h=document.querySelector('.top-header').getBoundingClientRect(),a=document.querySelector('.top-header .avatar').getBoundingClientRect();return a.right>h.left+h.width*.8})()`);
       await check(`document.documentElement.scrollWidth<=innerWidth`);
       await check(`Array.from(document.querySelectorAll('.dashboard-content table')).every(t=>t.parentElement.scrollWidth>=t.parentElement.clientWidth || t.scrollWidth<=innerWidth)`);
       if(width>900) await check(`Math.round(document.querySelector('.sidebar').getBoundingClientRect().width)===190`);

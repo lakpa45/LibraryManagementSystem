@@ -1,29 +1,66 @@
 .top-header.dashboard-header {
     height: auto;
     min-height: 76px;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-rows: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+.dashboard-header .header-left,
+.dashboard-header .header-right {
+    display: flex;
+    align-items: center;
+}
+
+.dashboard-header .header-left {
+    min-width: 0;
     gap: 12px;
 }
 
-.dashboard-header > .profile {
-    grid-column: 2;
-    grid-row: 1;
-    justify-self: end;
+.dashboard-header .header-right {
+    flex: 0 0 auto;
+    justify-content: flex-end;
+    gap: 16px;
+}
+
+.dashboard-header .header-copy {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    line-height: 1.25;
+}
+
+.dashboard-header .header-label {
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.dashboard-header .header-page-name {
+    overflow: hidden;
+    color: var(--ink);
+    font-size: 15px;
+    font-weight: 600;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.dashboard-header .profile {
     margin-left: 0;
 }
 
-.dashboard-header > .welcome {
-    grid-column: 1;
-    grid-row: 1;
-    min-width: 0;
-    flex-wrap: wrap;
-    padding-top: 0;
+.dashboard-header .profile-button {
+    padding: 0;
 }
 
-.dashboard-header .welcome-title {
-    min-width: 0;
-    overflow-wrap: anywhere;
+.dashboard-header .header-action-slot {
+    display: flex;
+    align-items: center;
+    margin-left: 8px;
 }
 
 .dashboard-header .home-icon {
@@ -31,12 +68,53 @@
 }
 
 @media (max-width: 900px) {
-    .top-header.dashboard-header {
-        grid-template-rows: auto auto;
+    .dashboard-header .mobile-menu {
+        display: grid;
+        flex: 0 0 44px;
+        place-items: center;
     }
 
-    .dashboard-header > .welcome {
-        grid-column: 1 / -1;
-        grid-row: 2;
+    .dashboard-header .header-left {
+        flex: 1 1 auto;
+    }
+
+    .dashboard-header .header-action-slot {
+        display: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .top-header.dashboard-header {
+        min-height: 72px;
+        padding: 10px;
+        gap: 10px;
+    }
+
+    .dashboard-header .header-left {
+        gap: 8px;
+    }
+
+    .dashboard-header .header-right {
+        gap: 9px;
+    }
+
+    .dashboard-header .today {
+        display: none;
+    }
+
+    .dashboard-header .home-icon {
+        width: 34px;
+        height: 34px;
+        flex-basis: 34px;
+    }
+
+    .dashboard-header .header-page-name {
+        max-width: 42vw;
+        font-size: 13px;
+    }
+
+    .dashboard-header .avatar {
+        width: 38px;
+        height: 38px;
     }
 }

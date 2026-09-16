@@ -137,21 +137,20 @@
 
         <main class="main-area">
             <header class="top-header dashboard-header">
-                <button type="button" class="mobile-menu" id="mobileMenuBtn" aria-label="Open navigation" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
-                <div class="profile">
-                    <button type="button" class="profile-button" onclick="toggleAdminMenu()">
-                        <i class="fa-regular fa-comment-dots"></i>
-                        <span class="profile-name" id="librarianName">Librarian</span>
-                        <span class="avatar">L</span>
-                    </button>
-                    <div id="adminMenu" class="profile-menu hidden">
-                        <button type="button" onclick="openPasswordModal()">Change Password</button>
-                        <button type="button" onclick="logout()">Logout</button>
-                    </div>
+                <div class="header-left">
+                    <button type="button" class="mobile-menu" id="mobileMenuBtn" aria-label="Open navigation" aria-expanded="false"><i class="fa-solid fa-bars"></i></button>
+                    <span class="home-icon"><i class="fa-solid fa-house"></i></span>
+                    <span class="header-copy"><span class="header-label">Librarian</span><span class="header-page-name">Dashboard</span></span>
                 </div>
-                <div class="welcome">
-                    <div class="welcome-title"><span class="home-icon"><i class="fa-solid fa-house"></i></span><span>Welcome back, <strong id="welcomeName">Librarian</strong></span></div>
+                <div class="header-right">
                     <span id="today-date" class="today"></span>
+                    <div class="profile">
+                        <button type="button" class="profile-button" onclick="toggleAdminMenu()" aria-label="Open librarian profile menu"><span class="avatar">L</span></button>
+                        <div id="adminMenu" class="profile-menu hidden">
+                            <button type="button" onclick="openPasswordModal()">Change Password</button>
+                            <button type="button" onclick="logout()">Logout</button>
+                        </div>
+                    </div>
                 </div>
             </header>
 
